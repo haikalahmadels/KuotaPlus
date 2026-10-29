@@ -8,18 +8,20 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Satu baris per nomor per tujuan: kirim ulang memperbarui baris yang sama, jadi hitungan salah tidak ter-reset.
         Schema::create('otp_codes', function (Blueprint $table) {
             $table->id();
             $table->string('msisdn', 15);
             $table->string('purpose', 16); // login | quota_transfer
             $table->json('context')->nullable();
-            $table->string('code_hash');
+            $table->string('code_hash')->nullable(); // null setelah dipakai
+            $table->timestamp('sent_at');
             $table->timestamp('expires_at');
             $table->unsignedTinyInteger('attempts')->default(0);
             $table->timestamp('locked_until')->nullable();
             $table->timestamps();
 
-            $table->index(['msisdn', 'purpose']);
+            $table->unique(['msisdn', 'purpose']);
         });
 
         // Satu-satunya pintu masuk perubahan pulsa dan paket.

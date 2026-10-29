@@ -10,6 +10,7 @@ class OtpCode extends Model
     {
         return [
             'context' => 'array',
+            'sent_at' => 'datetime',
             'expires_at' => 'datetime',
             'locked_until' => 'datetime',
         ];

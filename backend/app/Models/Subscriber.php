@@ -8,6 +8,18 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Subscriber extends Model
 {
+    /**
+     * "0881-0000-0001", "+62 881 0000 0001", atau "6288100000001" → "6288100000001".
+     * Null jika bukan nomor seluler Indonesia.
+     */
+    public static function normalizeMsisdn(string $input): ?string
+    {
+        $digits = preg_replace('/[\s\-().]/', '', $input);
+        $digits = preg_replace('/^(\+62|62|0)/', '62', $digits, 1);
+
+        return preg_match('/^628\d{7,11}$/', $digits) ? $digits : null;
+    }
+
     protected function casts(): array
     {
         return [

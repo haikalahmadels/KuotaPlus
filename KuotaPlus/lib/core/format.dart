@@ -15,6 +15,14 @@ String formatBytes(int bytes) =>
 /// 5000 → "Rp5.000".
 String formatRupiah(int amount) => _rupiah.format(amount);
 
+/// "6288100000001" → "0881-0000-0001".
+String formatMsisdn(String msisdn) {
+  final local = msisdn.startsWith('62') ? '0${msisdn.substring(2)}' : msisdn;
+  return [
+    for (var i = 0; i < local.length; i += 4) local.substring(i, i + 4 > local.length ? local.length : i + 4),
+  ].join('-');
+}
+
 /// Waktu dari API selalu ditampilkan dalam WIB, apa pun zona waktu perangkat.
 DateTime toWib(DateTime time) => time.toUtc().add(const Duration(hours: 7));
 

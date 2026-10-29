@@ -28,4 +28,9 @@ void main() {
     expect(formatDateTime(time), '30 Okt 2026, 00.30');
     expect(formatDateTime(DateTime.parse('2026-10-29T14:05:00+07:00')), '29 Okt 2026, 14.05');
   });
+
+  test('nomor HP ditampilkan dalam format lokal berkelompok', () {
+    expect(formatMsisdn('6288100000001'), '0881-0000-0001');
+    expect(formatMsisdn('628123456789'), '0812-3456-789');
+  });
 }

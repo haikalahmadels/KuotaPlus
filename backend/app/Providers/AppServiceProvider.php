@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,5 +26,8 @@ class AppServiceProvider extends ServiceProvider
         // Mass assignment dibuka: input dari luar wajib lewat FormRequest, dan hanya validated() yang disimpan.
         Model::unguard();
         Model::shouldBeStrict(! $this->app->isProduction());
+
+        RateLimiter::for('api', fn (Request $request) => Limit::perMinute(60)->by($request->user()?->id ?: $request->ip()));
+        RateLimiter::for('otp', fn (Request $request) => Limit::perMinute(5)->by($request->ip()));
     }
 }

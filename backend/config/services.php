@@ -39,6 +39,11 @@ return [
         'webhook_secret' => env('PAYMENT_WEBHOOK_SECRET'),
     ],
 
+    // FR-1.3: OTP dummy ditampilkan di banner Mode Demo. Default hanya di APP_ENV=local.
+    'otp' => [
+        'expose_code' => (bool) env('OTP_EXPOSE_CODE', env('APP_ENV') === 'local'),
+    ],
+
     'admin' => [
         'email' => env('ADMIN_EMAIL', 'admin@kuotaplus.test'),
         'password' => env('ADMIN_PASSWORD'),

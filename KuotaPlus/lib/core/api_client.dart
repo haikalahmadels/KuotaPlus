@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'api_exception.dart';
 import 'config.dart';
+import 'session.dart';
 import 'token_storage.dart';
 
 final tokenStorageProvider = Provider((ref) => TokenStorage());
@@ -23,13 +24,19 @@ final apiClientProvider = Provider(
   (ref) => ApiClient(
     ref.watch(tokenStorageProvider),
     onReachable: (reachable) => ref.read(serverReachableProvider.notifier).set(reachable),
+    onUnauthorized: () => ref.read(authProvider.notifier).signedOut(),
   ),
 );
 
 /// HTTP client untuk `/api`. Semua error dilempar sebagai [ApiException].
 /// Body sukses dikembalikan utuh (`{data, links?, meta?}`), atau null untuk 204.
 class ApiClient {
-  ApiClient(this._tokens, {void Function(bool reachable)? onReachable, Dio? dio})
+  ApiClient(
+    this._tokens, {
+    void Function(bool reachable)? onReachable,
+    void Function()? onUnauthorized,
+    Dio? dio,
+  })
       : _dio = dio ??
             Dio(BaseOptions(
               baseUrl: '$apiBaseUrl/api',
@@ -49,7 +56,11 @@ class ApiClient {
       },
       onError: (error, handler) async {
         onReachable?.call(error.response != null);
-        if (error.response?.statusCode == 401) await _tokens.clear();
+        if (error.response?.statusCode == 401) {
+          // Router mengarahkan ke /login?from=<layar asal> saat sesi berakhir.
+          await _tokens.clear();
+          onUnauthorized?.call();
+        }
         handler.next(error);
       },
     ));

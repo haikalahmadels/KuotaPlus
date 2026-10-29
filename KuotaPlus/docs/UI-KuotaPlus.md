@@ -109,3 +109,70 @@ Angka memakai `FontFeature.tabularFigures()` supaya tidak bergeser saat berubah.
 ## Wireframe
 
 Diisi per milestone. Format: sketsa ASCII + daftar state (memuat, berhasil, kosong, error) + catatan perilaku.
+
+### S01 Login nomor HP (M1)
+
+```
+┌──────────────────────────────┐
+│                              │
+│  Kuota+                      │  ← title
+│  Masuk dengan nomor Nusantel │  ← textMuted
+│                              │
+│  Nomor HP                    │
+│  ┌────────────────────────┐  │
+│  │ 0881-0000-0001         │  │  ← keyboard angka, autofill nomor
+│  └────────────────────────┘  │
+│  Nomor bukan pelanggan       │  ← error di bawah field (danger)
+│  Nusantel.                   │
+│                              │
+│  ┌────────────────────────┐  │
+│  │     Kirim kode OTP     │  │  ← FilledButton, loading saat request
+│  └────────────────────────┘  │
+└──────────────────────────────┘
+```
+
+| State | Tampilan |
+| --- | --- |
+| Awal | Field kosong, tombol aktif setelah ada isian |
+| Memuat | Tombol berisi spinner, field dikunci |
+| Error field | `VALIDATION_FAILED`, `NOT_SUBSCRIBER`, `SUBSCRIBER_TERMINATED`: pesan server di bawah field |
+| Error lain | `OTP_LOCKED`, `OTP_RESEND_TOO_SOON`, `TOO_MANY_REQUESTS`, jaringan: pesan di bawah field |
+| Berhasil | Pindah ke S02 membawa nomor dan waktu kedaluwarsa |
+
+### S02 Verifikasi OTP (M1)
+
+```
+┌──────────────────────────────┐
+│ ←  Verifikasi                │
+│                              │
+│  Masukkan 6 digit kode yang  │
+│  dikirim ke 0881-0000-0001   │
+│                              │
+│ ┌──────────────────────────┐ │
+│ │ MODE DEMO                │ │  ← banner (warning), hanya jika ada demo_otp
+│ │ Kode OTP: 405678  [Isi]  │ │     ketuk "Isi" untuk mengisi otomatis
+│ └──────────────────────────┘ │
+│                              │
+│  ┌────────────────────────┐  │
+│  │  4 0 5 6 7 8           │  │  ← satu field, 6 digit, huruf renggang
+│  └────────────────────────┘  │
+│  Kode salah. Sisa 3 percobaan│  ← error (danger)
+│                              │
+│  Kirim ulang dalam 0:42      │  ← jadi tombol "Kirim ulang kode" saat 0
+│                              │
+│  ┌────────────────────────┐  │
+│  │         Masuk          │  │
+│  └────────────────────────┘  │
+└──────────────────────────────┘
+```
+
+| State | Tampilan |
+| --- | --- |
+| Mengisi | Verifikasi otomatis saat digit ke-6 diketik |
+| Memuat | Tombol berisi spinner |
+| `OTP_INVALID` | Pesan dengan sisa percobaan, field dikosongkan |
+| `OTP_EXPIRED` | Pesan "kedaluwarsa", tombol kirim ulang langsung aktif |
+| `OTP_LOCKED` | Kembali ke S01 dengan pesan jam buka kunci |
+| Berhasil | Token disimpan, pindah ke route asal (`from`) atau `/home` |
+
+Catatan: sampai M2, `/home` adalah layar sementara berisi tombol Keluar.
