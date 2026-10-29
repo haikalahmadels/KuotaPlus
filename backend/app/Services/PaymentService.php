@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Exceptions\ApiException;
 use App\Models\PaymentCallback;
+use App\Models\Recommendation;
 use App\Models\Subscriber;
 use App\Models\Subscription;
 use App\Models\Transaction;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\DB;
  */
 class PaymentService
 {
-    public function __construct(private SettingService $settings) {}
+    public function __construct(private SettingService $settings, private ForecastService $forecasts) {}
 
     public static function sign(string $rawBody): string
     {
@@ -112,6 +113,13 @@ class PaymentService
                 'expires_at' => now()->addDays($package->validity_days),
                 'status' => 'active',
             ]);
+
+            // FR-10.8: pembelian dari layar rekomendasi.
+            if ($transaction->recommendation_id) {
+                Recommendation::whereKey($transaction->recommendation_id)->update(['purchased_transaction_id' => $transaction->id]);
+            }
+            // FR-9.5: jatah harian dan prediksi dihitung ulang setiap ada pembelian paket.
+            $this->forecasts->recompute($transaction->user);
 
             return;
         }

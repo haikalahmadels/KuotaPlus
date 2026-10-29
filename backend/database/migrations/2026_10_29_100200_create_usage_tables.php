@@ -31,6 +31,7 @@ return new class extends Migration
             $table->unsignedBigInteger('avg_daily_bytes')->nullable();
             $table->unsignedBigInteger('remaining_bytes')->nullable();
             $table->timestamp('predicted_empty_at')->nullable();
+            $table->timestamp('main_expires_at'); // paket utama yang dipakai untuk status dan jatah harian
             $table->unsignedBigInteger('daily_budget_bytes')->nullable();
             $table->string('confidence', 8); // high | low | none
             $table->string('status', 8)->nullable(); // safe | risk

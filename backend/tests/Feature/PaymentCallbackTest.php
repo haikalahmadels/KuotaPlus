@@ -8,6 +8,7 @@ use App\Models\Subscriber;
 use App\Models\Subscription;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Services\ForecastService;
 use App\Services\PaymentService;
 use App\Services\SettingService;
 use Database\Seeders\AppSeeder;
@@ -127,7 +128,7 @@ class PaymentCallbackTest extends TestCase
     {
         $transaction = $this->pendingPackage();
 
-        $this->app->instance(PaymentService::class, new class(app(SettingService::class)) extends PaymentService
+        $this->app->instance(PaymentService::class, new class(app(SettingService::class), app(ForecastService::class)) extends PaymentService
         {
             public function provision(Transaction $transaction): void
             {

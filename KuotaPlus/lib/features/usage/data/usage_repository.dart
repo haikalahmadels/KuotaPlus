@@ -48,6 +48,7 @@ class UsageSummary {
     required this.period,
     required this.source,
     required this.lastSyncedAt,
+    required this.dailyBudgetBytes,
     required this.totalBytes,
     required this.topApps,
     required this.apps,
@@ -59,6 +60,7 @@ class UsageSummary {
         period: json['period'] as String,
         source: json['source'] as String?,
         lastSyncedAt: json['last_synced_at'] == null ? null : DateTime.parse(json['last_synced_at'] as String),
+        dailyBudgetBytes: json['daily_budget_bytes'] as int?,
         totalBytes: json['total_bytes'] as int,
         topApps: [for (final a in json['top_apps'] as List) AppUsage.fromJson(a as Map<String, dynamic>)],
         apps: [for (final a in json['apps'] as List) AppUsage.fromJson(a as Map<String, dynamic>)],
@@ -71,6 +73,9 @@ class UsageSummary {
   /// device | demo | null (belum ada data sama sekali)
   final String? source;
   final DateTime? lastSyncedAt;
+
+  /// Jatah harian saat ini (FR-9.5), garis pembanding di bar harian. Null jika tidak ada paket aktif.
+  final int? dailyBudgetBytes;
   final int totalBytes;
   final List<AppUsage> topApps;
   final List<AppUsage> apps;

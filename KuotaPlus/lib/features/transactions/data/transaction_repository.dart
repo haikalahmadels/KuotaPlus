@@ -20,6 +20,7 @@ class TransactionRepository {
     required String idempotencyKey,
     int? packageId,
     int? topupAmount,
+    int? recommendationId,
   }) async {
     final body = await _api.post(
       '/transactions',
@@ -29,6 +30,7 @@ class TransactionRepository {
         'payment_method': paymentMethod,
         'package_id': ?packageId,
         'topup_amount': ?topupAmount,
+        'recommendation_id': ?recommendationId,
       },
     );
     return Transaction.fromJson(body['data'] as Map<String, dynamic>);

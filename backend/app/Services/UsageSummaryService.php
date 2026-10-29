@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\App;
 use App\Models\UsageRecord;
 use App\Models\User;
+use App\Support\Format;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -23,6 +24,8 @@ class UsageSummaryService
 
     private const MB = 1048576;
 
+    public function __construct(private ForecastService $forecasts) {}
+
     public function summary(User $user, string $period): array
     {
         [$start, $end] = $this->range($period);
@@ -37,13 +40,16 @@ class UsageSummaryService
         ])->values();
 
         $dailyTotals = $records->groupBy(fn ($r) => $r->usage_date->toDateString())->map->sum('bytes_mobile');
+        // Jatah harian snapshot 00:00 dari evaluasi reward (FR-11); kosong untuk hari yang belum dievaluasi.
+        $budgets = $user->dailyEvaluations()->whereBetween('eval_date', [$start, $end])->get()
+            ->mapWithKeys(fn ($e) => [$e->eval_date->toDateString() => $e->budget_bytes]);
         $daily = [];
         for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
             $bytes = (int) ($dailyTotals[$date->toDateString()] ?? 0);
             $daily[] = [
                 'date' => $date->toDateString(),
                 'bytes' => $bytes,
-                'budget_bytes' => null, // jatah harian snapshot, diisi di M5
+                'budget_bytes' => $budgets[$date->toDateString()] ?? null,
                 'is_spike' => $this->isSpike($bytes, $date, $dailyTotals),
             ];
         }
@@ -54,6 +60,8 @@ class UsageSummaryService
             'period' => $period,
             'source' => $latest?->source,
             'last_synced_at' => $latest?->synced_at->toIso8601String(),
+            // Jatah harian saat ini, digambar sebagai garis pembanding di bar harian (FR-8.3).
+            'daily_budget_bytes' => $this->forecasts->latest($user)?->daily_budget_bytes,
             'total_bytes' => $total,
             'top_apps' => $this->top($apps, $total),
             'apps' => $apps,
@@ -146,7 +154,7 @@ class UsageSummaryService
 
         $top = $apps->first();
         if ($top && $top['percent'] >= 40) {
-            $sentence = "{$top['label']} memakai ".self::number($top['percent'])."% kuotamu ".self::PERIOD_LABELS[$period];
+            $sentence = "{$top['label']} memakai ".Format::decimal($top['percent'])."% kuotamu ".self::PERIOD_LABELS[$period];
             if (($growth[$top['label']] ?? 0) >= 20) {
                 $sentence .= ', naik '.round($growth[$top['label']]).'% dari minggu lalu';
             }
@@ -163,7 +171,7 @@ class UsageSummaryService
         $spike = collect($daily)->where('is_spike', true)->last();
         if ($spike) {
             $insights[] = 'Lonjakan tidak biasa pada '.Carbon::parse($spike['date'])->locale('id')->translatedFormat('j M')
-                .': '.self::bytes($spike['bytes']).' dalam sehari.';
+                .': '.Format::bytes($spike['bytes']).' dalam sehari.';
         }
 
         return array_slice($insights, 0, 3);
@@ -191,17 +199,5 @@ class UsageSummaryService
         }
 
         return $growth;
-    }
-
-    private static function number(float $value): string
-    {
-        return rtrim(rtrim(number_format($value, 1, ',', '.'), '0'), ',');
-    }
-
-    private static function bytes(int $bytes): string
-    {
-        return $bytes < 1024 * self::MB
-            ? round($bytes / self::MB).' MB'
-            : self::number($bytes / (1024 * self::MB)).' GB';
     }
 }

@@ -1,0 +1,57 @@
+{
+    "server_time": "2026-10-29T18:06:13+07:00",
+    "subscriber": {
+        "msisdn": "6288100000002",
+        "pulsa_balance": 15000,
+        "status": "active",
+        "active_until": "2026-12-08",
+        "days_left": 40,
+        "grace_until": null
+    },
+    "subscriptions": [
+        {
+            "id": 2,
+            "source": "purchase",
+            "name": "Bulanan 50 GB",
+            "main_total": 53687091200,
+            "main_used": 0,
+            "main_remaining": 53687091200,
+            "app_total": 0,
+            "app_used": 0,
+            "app_remaining": 0,
+            "app_category": null,
+            "started_at": "2026-10-29T18:06:12+07:00",
+            "expires_at": "2026-11-28T18:06:12+07:00",
+            "status": "active",
+            "shared_from": null
+        }
+    ],
+    "forecast": {
+        "confidence": "high",
+        "status": "safe",
+        "avg_daily_bytes": 398458880,
+        "remaining_bytes": 53687091200,
+        "predicted_empty_at": "2027-03-13T11:47:16+07:00",
+        "main_expires_at": "2026-11-28T18:06:12+07:00",
+        "days_early": null,
+        "computed_at": "2026-10-29T18:06:13+07:00"
+    },
+    "daily_budget": {
+        "budget_bytes": 1789569706,
+        "used_today_bytes": 143130624
+    },
+    "recommendation_teaser": {
+        "recommendation_id": 1,
+        "package_name": "Bulanan 15 GB",
+        "saving_30d": 80000
+    },
+    "points": {
+        "balance": 0,
+        "streak": 0
+    },
+    "usage": {
+        "source": "demo",
+        "last_synced_at": "2026-10-29T18:06:13+07:00"
+    },
+    "alerts": []
+}

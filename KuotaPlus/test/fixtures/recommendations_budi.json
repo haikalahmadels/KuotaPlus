@@ -1,0 +1,84 @@
+{
+    "status": "ok",
+    "need": {
+        "total_bytes": 13149143040,
+        "by_category": {
+            "video": 2932011314,
+            "sosmed": 4162250644,
+            "game": 0,
+            "belajar": 0,
+            "umum": 6054881083
+        }
+    },
+    "spent_30d": 135000,
+    "items": [
+        {
+            "id": 1,
+            "rank": 1,
+            "package": {
+                "id": 6,
+                "code": "BL15",
+                "name": "Bulanan 15 GB",
+                "type": "bulanan",
+                "price": 55000,
+                "main_quota": 16106127360,
+                "app_quota": 0,
+                "app_category": null,
+                "app_examples": [],
+                "validity_days": 30,
+                "is_recommended": false
+            },
+            "cost_30d": 55000,
+            "saving_30d": 80000,
+            "leftover_bytes": 2956984320,
+            "reason": "Pemakaianmu sekitar 11,1 GB\/bulan, 54% dari WhatsApp dan Google Maps. Bulanan 15 GB berisi 15 GB, cukup dengan sisa 2,8 GB."
+        },
+        {
+            "id": 2,
+            "rank": 2,
+            "package": {
+                "id": 9,
+                "code": "VID30",
+                "name": "Video 30 Hari",
+                "type": "aplikasi",
+                "price": 65000,
+                "main_quota": 12884901888,
+                "app_quota": 17179869184,
+                "app_category": "video",
+                "app_examples": [
+                    "TikTok",
+                    "YouTube",
+                    "Netflix",
+                    "Vidio"
+                ],
+                "validity_days": 30,
+                "is_recommended": false
+            },
+            "cost_30d": 65000,
+            "saving_30d": 70000,
+            "leftover_bytes": 16915628032,
+            "reason": "Pemakaianmu sekitar 11,1 GB\/bulan, 54% dari WhatsApp dan Google Maps. Video 30 Hari berisi 16 GB kuota video + 12 GB utama, cukup dengan sisa 15,8 GB."
+        },
+        {
+            "id": 3,
+            "rank": 3,
+            "package": {
+                "id": 7,
+                "code": "BL25",
+                "name": "Bulanan 25 GB",
+                "type": "bulanan",
+                "price": 80000,
+                "main_quota": 26843545600,
+                "app_quota": 0,
+                "app_category": null,
+                "app_examples": [],
+                "validity_days": 30,
+                "is_recommended": false
+            },
+            "cost_30d": 80000,
+            "saving_30d": 55000,
+            "leftover_bytes": 13694402560,
+            "reason": "Pemakaianmu sekitar 11,1 GB\/bulan, 54% dari WhatsApp dan Google Maps. Bulanan 25 GB berisi 25 GB, cukup dengan sisa 12,8 GB."
+        }
+    ]
+}

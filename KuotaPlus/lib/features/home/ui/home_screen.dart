@@ -16,6 +16,7 @@ import '../../usage/data/device_usage.dart';
 import '../../usage/providers.dart';
 import '../../usage/ui/usage_access_screen.dart';
 import '../data/home_repository.dart';
+import 'forecast_cards.dart';
 import '../providers.dart';
 
 /// S04 (docs/UI-KuotaPlus.md).
@@ -103,6 +104,18 @@ class _HomeContent extends StatelessWidget {
         )),
         const SizedBox(height: 8),
         _PulsaCard(data.subscriber),
+        if (data.forecast != null) ...[
+          const SizedBox(height: 12),
+          ForecastCard(data.forecast!),
+        ],
+        if (data.dailyBudget != null) ...[
+          const SizedBox(height: 12),
+          DailyBudgetCard(budgetBytes: data.dailyBudget!.budgetBytes, usedTodayBytes: data.dailyBudget!.usedTodayBytes),
+        ],
+        if (data.teaser != null) ...[
+          const SizedBox(height: 12),
+          RecommendationTeaser(packageName: data.teaser!.packageName, saving: data.teaser!.saving),
+        ],
         const SizedBox(height: 24),
         Text('Kuota aktif', style: theme.textTheme.titleLarge),
         const SizedBox(height: 12),
@@ -256,8 +269,8 @@ class _QuotaRow extends StatelessWidget {
           minHeight: 8,
           borderRadius: BorderRadius.circular(4),
           backgroundColor: AppColors.border,
-          semanticsLabel: 'Sisa kuota ${label ?? ''}',
-          semanticsValue: '${formatBytes(remaining)} dari ${formatBytes(total)}',
+          // semanticsValue harus angka; keterangan lengkap dibacakan lewat label.
+          semanticsLabel: 'Sisa kuota ${label ?? ''} ${formatBytes(remaining)} dari ${formatBytes(total)}',
         ),
       ],
     );

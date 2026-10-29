@@ -548,6 +548,7 @@ Error: `409 DEVICE_DATA_EXISTS` jika pengguna sudah punya data `source = device`
     "period": "7d",
     "source": "device",
     "last_synced_at": "2026-10-29T08:00:00+07:00",
+    "daily_budget_bytes": 412090368,
     "total_bytes": 3670016000,
     "top_apps": [
       { "app_id": 12, "package_name": "com.zhiliaoapp.musically", "label": "TikTok", "category": "video", "bytes": 1761607680, "percent": 48.0 },
@@ -565,7 +566,8 @@ Error: `409 DEVICE_DATA_EXISTS` jika pengguna sudah punya data `source = device`
 ```
 
 - `top_apps`: 5 aplikasi terbesar + satu item "Lainnya" (`app_id = null`) untuk donut chart. `apps`: daftar lengkap, terurut menurun.
-- `daily.budget_bytes`: jatah harian snapshot hari itu, `null` jika belum ada. `is_spike`: pemakaian > 3× median 7 hari.
+- `daily_budget_bytes`: jatah harian saat ini dari prediksi terbaru, digambar sebagai garis pembanding. `null` jika tidak ada paket aktif.
+- `daily.budget_bytes`: jatah harian snapshot hari itu (dari evaluasi reward, M6), `null` jika belum ada. `is_spike`: pemakaian > 3× median 7 hari.
 - `insights`: maksimal 3 kalimat (FR-8.5).
 - Belum ada data: `source = null`, semua array kosong. Client menampilkan pesan FR-8.6.
 - Ikon aplikasi tidak dikirim. Android dan web sama-sama memakai ikon kategori, supaya tampilan konsisten dan tidak butuh kode native tambahan.
@@ -614,7 +616,7 @@ Mengambil batch terbaru. Batch dihitung ulang jika lebih lama dari forecast terb
 }
 ```
 
-- `status`: `ok` | `insufficient_data` (< 7 hari data, `items` kosong) | `already_cheapest` (`saving_30d` ≤ 0 untuk semua item).
+- `status`: `ok` | `insufficient_data` (< 7 hari data, `items` kosong) | `already_cheapest` (`saving_30d` rank 1 ≤ 0 **dan** paket terakhir yang dibeli cukup). Jika paket terakhir tidak cukup, status tetap `ok` dan `saving_30d` boleh negatif.
 - `items`: 1 rekomendasi utama (`rank = 1`) + maksimal 2 alternatif.
 - `spent_30d`: total `gross_amount` transaksi paket `paid` dalam 30 hari terakhir. `saving_30d` = `spent_30d` − `cost_30d`. Keduanya `null` jika tidak ada pembelian paket dalam 30 hari terakhir (FR-10.5).
 

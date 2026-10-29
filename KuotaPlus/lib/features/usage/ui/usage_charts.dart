@@ -66,11 +66,13 @@ class UsageDonut extends StatelessWidget {
   }
 }
 
-/// Bar pemakaian harian (FR-8.3). Hari lonjakan diberi warna peringatan; garis jatah harian ditambahkan di M5.
+/// Bar pemakaian harian (FR-8.3) dengan garis putus-putus jatah harian saat ini sebagai pembanding.
+/// Hari lonjakan diberi warna peringatan.
 class DailyUsageChart extends StatelessWidget {
-  const DailyUsageChart({super.key, required this.daily});
+  const DailyUsageChart({super.key, required this.daily, this.budgetBytes});
 
   final List<DailyUsage> daily;
+  final int? budgetBytes;
 
   static const _mb = 1024 * 1024;
 
@@ -78,16 +80,33 @@ class DailyUsageChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final muted = theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant);
-    final maxMb = daily.fold<double>(0, (max, d) => d.bytes / _mb > max ? d.bytes / _mb : max);
+    final budgetMb = budgetBytes == null ? null : budgetBytes! / _mb;
+    final maxMb = daily.fold<double>(budgetMb ?? 0, (max, d) => d.bytes / _mb > max ? d.bytes / _mb : max);
     final dense = daily.length > 10;
 
     return Semantics(
-      label: 'Pemakaian harian ${daily.length} hari, tertinggi ${formatBytes((maxMb * _mb).round())}',
+      label: 'Pemakaian harian ${daily.length} hari, tertinggi ${formatBytes((maxMb * _mb).round())}'
+          '${budgetBytes == null ? '' : ', jatah harian ${formatBytes(budgetBytes!)}'}',
       child: SizedBox(
         height: 180,
         child: BarChart(
           BarChartData(
             maxY: maxMb == 0 ? 1 : maxMb * 1.15,
+            extraLinesData: ExtraLinesData(horizontalLines: [
+              if (budgetMb != null)
+                HorizontalLine(
+                  y: budgetMb,
+                  color: AppColors.text,
+                  strokeWidth: 2,
+                  dashArray: const [6, 4],
+                  label: HorizontalLineLabel(
+                    show: true,
+                    alignment: Alignment.topRight,
+                    style: muted,
+                    labelResolver: (_) => 'Jatah ${formatBytes(budgetBytes!)}',
+                  ),
+                ),
+            ]),
             alignment: BarChartAlignment.spaceBetween,
             borderData: FlBorderData(show: false),
             gridData: FlGridData(

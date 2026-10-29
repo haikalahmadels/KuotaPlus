@@ -7,6 +7,7 @@ use App\Models\Package;
 use App\Models\Subscriber;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Support\Format;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -128,6 +129,6 @@ class TransactionService
 
     public static function rupiah(int $amount): string
     {
-        return 'Rp'.number_format($amount, 0, ',', '.');
+        return Format::rupiah($amount);
     }
 }

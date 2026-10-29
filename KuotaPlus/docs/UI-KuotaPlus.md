@@ -414,3 +414,63 @@ Ikon kategori, dua kartu angka (Total, Rata-rata per hari), dan bar tren harian 
 ### S13 Mode Demo (M4, bottom sheet)
 
 Daftar profil Rina, Budi, Acak dengan deskripsi singkat. Memilih profil membuat data 30 hari dan menutup sheet. `DEVICE_DATA_EXISTS` ditampilkan sebagai pesan di sheet.
+
+### S04 Beranda: kartu prediksi, jatah harian, teaser (M5)
+
+Disisipkan di bawah kartu Pulsa, sebelum "Kuota aktif":
+
+```
+┌──────────────────────────┐
+│ (Berisiko)               │  ← chip warning; (Aman) success; (Perkiraan awal) muted untuk confidence low
+│ Kuota diperkirakan habis │
+│ 5 Nov 2026               │
+│ 11 hari lebih cepat dari │  ← ketuk kartu Berisiko → S14
+│ paket berakhir (16 Nov)  │
+└──────────────────────────┘
+┌──────────────────────────┐
+│ Jatah hari ini           │
+│ 512 MB                   │  ← display
+│ ▓▓▓▓▓▓▓░░░░              │  ← merah jika terlewati
+│ Terpakai 300 MB, sisa 212│
+└──────────────────────────┘
+┌──────────────────────────┐
+│ 🐷 Hemat Rp80.000/bulan  >│  ← hanya jika saving_30d > 0 (FR-2.4)
+│    dengan Bulanan 15 GB  │
+└──────────────────────────┘
+```
+
+| Kondisi | Kartu prediksi |
+| --- | --- |
+| confidence `none` | "Prediksi belum tersedia — Kumpulkan data pemakaian 3 hari dulu" |
+| avg 0 | "Kuota aman sampai paket berakhir" |
+| `risk` | Tanggal habis + selisih hari, chip Berisiko |
+| `safe` | Tanggal habis + "Setelah paket berakhir [tanggal]", chip Aman |
+
+### S14 Rekomendasi paket (M5)
+
+```
+┌──────────────────────────────┐
+│ ←  Rekomendasi paket         │
+│ Perkiraan kebutuhanmu 26 GB  │
+│ per 30 hari (cadangan 10%).  │
+│ ┏━━━━━━━━━━━━━━━━━━━━━━━━━━┓ │  ← bingkai primary untuk rank 1
+│ ┃ Paling hemat untukmu     ┃ │
+│ ┃ Video 30 Hari            ┃ │
+│ ┃ Rp65.000 per 30 hari     ┃ │
+│ ┃ (Hemat Rp10.000/bulan)   ┃ │  ← chip success; atau "Rp X lebih mahal…, tapi cukup sebulan penuh"
+│ ┃ Pemakaianmu sekitar ...  ┃ │  ← alasan (FR-10.6)
+│ ┃          [Beli paket ini]┃ │  ← catat klik, lalu S06 dengan recommendation_id
+│ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━┛ │
+│ ┌──────────────────────────┐ │
+│ │ Alternatif 1 ...   [Beli]│ │
+│ └──────────────────────────┘ │
+└──────────────────────────────┘
+```
+
+| State | Tampilan |
+| --- | --- |
+| `insufficient_data` | "Rekomendasi tersedia setelah 7 hari pemakaian" (FR-10.1) |
+| `already_cheapest` | Kartu "Paketmu sekarang sudah paling hemat" di atas daftar |
+| Tidak ada paket yang cukup | "Belum ada paket di katalog yang cukup untuk pemakaianmu" |
+
+S05 Katalog: paket rank 1 diberi chip "Paling hemat untukmu" (FR-3.3). S11 Analisis: bar harian diberi garis putus-putus "Jatah X" (FR-8.3).

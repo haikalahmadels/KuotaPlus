@@ -4,28 +4,55 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/api_client.dart';
 import '../../../core/api_exception.dart';
+import '../../../core/models/forecast.dart';
 import '../../../core/models/subscriber.dart';
 import '../../../core/models/subscription.dart';
 
-/// Isi `GET /home` yang dipakai di M2. Prediksi, rekomendasi, dan alert ditambahkan di M5–M7.
+/// Isi `GET /home`. Poin dan alert ditambahkan di M6–M7.
 class HomeData {
   const HomeData({
     required this.serverTime,
     required this.subscriber,
     required this.subscriptions,
+    this.forecast,
+    this.dailyBudget,
+    this.teaser,
   });
 
-  factory HomeData.fromJson(Map<String, dynamic> json) => HomeData(
-        serverTime: DateTime.parse(json['server_time'] as String),
-        subscriber: Subscriber.fromJson(json['subscriber'] as Map<String, dynamic>),
-        subscriptions: [
-          for (final s in json['subscriptions'] as List) Subscription.fromJson(s as Map<String, dynamic>),
-        ],
-      );
+  factory HomeData.fromJson(Map<String, dynamic> json) {
+    final budget = json['daily_budget'] as Map<String, dynamic>?;
+    final teaser = json['recommendation_teaser'] as Map<String, dynamic>?;
+
+    return HomeData(
+      serverTime: DateTime.parse(json['server_time'] as String),
+      subscriber: Subscriber.fromJson(json['subscriber'] as Map<String, dynamic>),
+      subscriptions: [
+        for (final s in json['subscriptions'] as List) Subscription.fromJson(s as Map<String, dynamic>),
+      ],
+      forecast: json['forecast'] == null ? null : Forecast.fromJson(json['forecast'] as Map<String, dynamic>),
+      dailyBudget: budget == null
+          ? null
+          : (budgetBytes: budget['budget_bytes'] as int, usedTodayBytes: budget['used_today_bytes'] as int),
+      teaser: teaser == null
+          ? null
+          : (
+              recommendationId: teaser['recommendation_id'] as int,
+              packageName: teaser['package_name'] as String,
+              saving: teaser['saving_30d'] as int,
+            ),
+    );
+  }
 
   final DateTime serverTime;
   final Subscriber subscriber;
   final List<Subscription> subscriptions;
+  final Forecast? forecast;
+
+  /// Jatah hari ini dan pemakaian hari ini (FR-2.3).
+  final ({int budgetBytes, int usedTodayBytes})? dailyBudget;
+
+  /// Ada hanya jika rekomendasi utama memberi penghematan (FR-2.4).
+  final ({int recommendationId, String packageName, int saving})? teaser;
 }
 
 class HomeSnapshot {

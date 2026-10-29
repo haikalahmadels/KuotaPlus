@@ -8,9 +8,12 @@ import '../../transactions/ui/payment_form.dart';
 
 /// S06 Checkout paket. Tukar poin ditambahkan di M6 (FR-12).
 class CheckoutScreen extends ConsumerWidget {
-  const CheckoutScreen({super.key, required this.package});
+  const CheckoutScreen({super.key, required this.package, this.recommendationId});
 
   final QuotaPackage package;
+
+  /// Diisi jika dibuka dari layar rekomendasi, untuk metrik "dibeli dari rekomendasi" (FR-10.8).
+  final int? recommendationId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -52,6 +55,7 @@ class CheckoutScreen extends ConsumerWidget {
                   packageId: p.id,
                   paymentMethod: method,
                   idempotencyKey: key,
+                  recommendationId: recommendationId,
                 ),
           ),
         ],

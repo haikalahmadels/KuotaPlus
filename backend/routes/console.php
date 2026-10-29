@@ -4,6 +4,7 @@ use App\Models\Subscriber;
 use App\Models\Subscription;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Services\ForecastService;
 use App\Services\PaymentService;
 use App\Services\SettingService;
 use Illuminate\Support\Facades\Artisan;
@@ -53,6 +54,14 @@ Artisan::command('subscribers:status', function (SettingService $settings) {
     });
 })->purpose('Kartu active → grace → terminated sesuai masa aktif dan masa tenggang');
 
+Artisan::command('forecasts:daily', function (ForecastService $forecasts) {
+    $users = User::whereHas('subscriber.subscriptions', fn ($q) => $q->current())->get();
+    $users->each(fn (User $user) => $forecasts->recompute($user));
+
+    $this->info("{$users->count()} prediksi dihitung ulang.");
+})->purpose('Jatah harian dan prediksi dihitung ulang 00:00 (FR-9.5); juga snapshot jatah untuk evaluasi reward');
+
 Schedule::command('transactions:expire')->everyMinute();
 Schedule::command('subscriptions:expire')->everyMinute();
+Schedule::command('forecasts:daily')->dailyAt('00:00');
 Schedule::command('subscribers:status')->dailyAt('00:01');

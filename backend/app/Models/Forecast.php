@@ -12,6 +12,7 @@ class Forecast extends Model
         return [
             'computed_at' => 'datetime',
             'predicted_empty_at' => 'datetime',
+            'main_expires_at' => 'datetime',
         ];
     }
 

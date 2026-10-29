@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PackageResource;
-use App\Models\App;
 use App\Models\Package;
+use App\Services\RecommendationService;
 use App\Services\SettingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,24 +16,18 @@ class CatalogController extends Controller
 
     public function __construct(private SettingService $settings) {}
 
-    /** GET /packages (FR-3.1–3.2). is_recommended diisi di M5. */
-    public function packages(Request $request): JsonResponse
+    /** GET /packages (FR-3.1–3.3). */
+    public function packages(Request $request, RecommendationService $recommendations): JsonResponse
     {
-        $packages = Package::where('is_active', true)->orderBy('price')->get()->groupBy('type');
-
-        // Contoh aplikasi per kategori untuk paket aplikasi (maksimal 5, label unik).
-        $examples = App::whereIn('category', $packages->flatten()->pluck('app_category')->filter()->unique())
-            ->orderBy('id')
-            ->get(['category', 'label'])
-            ->groupBy('category')
-            ->map(fn ($apps) => $apps->pluck('label')->unique()->take(5)->values()->all());
+        $packages = PackageResource::list(
+            Package::where('is_active', true)->orderBy('price')->get(),
+            $recommendations->recommendedPackageId($request->user()),
+        )->groupBy(fn ($resource) => $resource->type);
 
         return response()->json(['data' => [
             'groups' => collect(self::GROUP_ORDER)->map(fn ($type) => [
                 'type' => $type,
-                'packages' => ($packages[$type] ?? collect())
-                    ->map(fn ($package) => new PackageResource($package, $examples[$package->app_category] ?? []))
-                    ->values(),
+                'packages' => ($packages[$type] ?? collect())->values(),
             ]),
             'points' => [
                 'balance' => $request->user()->pointBalance(),

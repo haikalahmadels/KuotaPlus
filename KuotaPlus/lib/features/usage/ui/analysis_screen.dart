@@ -112,7 +112,7 @@ class _Summary extends StatelessWidget {
           const SizedBox(height: 24),
           Text('Pemakaian harian', style: theme.textTheme.titleLarge),
           const SizedBox(height: 12),
-          DailyUsageChart(daily: summary.daily),
+          DailyUsageChart(daily: summary.daily, budgetBytes: summary.dailyBudgetBytes),
         ],
         if (summary.apps.isNotEmpty) ...[
           const SizedBox(height: 24),

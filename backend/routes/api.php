@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\HomeController;
+use App\Http\Controllers\Api\RecommendationController;
 use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\Api\UsageController;
 use Illuminate\Support\Facades\Route;
@@ -32,4 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('usage/demo', [UsageController::class, 'demo']);
     Route::get('usage/summary', [UsageController::class, 'summary']);
     Route::get('usage/apps/{id}', [UsageController::class, 'app'])->whereNumber('id');
+
+    Route::get('recommendations', [RecommendationController::class, 'index']);
+    Route::post('recommendations/{id}/click', [RecommendationController::class, 'click'])->whereNumber('id');
 });

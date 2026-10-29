@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Domain\UsageProfiles;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ForecastResource;
 use App\Services\DemoDataService;
+use App\Services\ForecastService;
 use App\Services\UsageSummaryService;
 use App\Services\UsageSyncService;
 use Illuminate\Http\JsonResponse;
@@ -13,8 +15,8 @@ use Illuminate\Validation\Rule;
 
 class UsageController extends Controller
 {
-    /** POST /usage/sync (FR-7). forecast diisi di M5, alerts di M7. */
-    public function sync(Request $request, UsageSyncService $sync): JsonResponse
+    /** POST /usage/sync (FR-7). Prediksi dihitung ulang setelah setiap sync (FR-9.6). alerts diisi di M7. */
+    public function sync(Request $request, UsageSyncService $sync, ForecastService $forecasts): JsonResponse
     {
         $validated = $request->validate([
             'buckets' => ['present', 'array', 'max:2100'],
@@ -24,22 +26,32 @@ class UsageController extends Controller
             'buckets.*.bytes_mobile' => ['required', 'integer', 'min:0'],
         ]);
 
-        return response()->json(['data' => $sync->sync($request->user(), $validated['buckets']) + [
-            'forecast' => null,
+        $result = $sync->sync($request->user(), $validated['buckets']);
+
+        return response()->json(['data' => $result + [
+            'forecast' => $this->forecast($request, $forecasts),
             'alerts' => [],
         ]]);
     }
 
     /** POST /usage/demo (FR-7.8). */
-    public function demo(Request $request, DemoDataService $demo): JsonResponse
+    public function demo(Request $request, DemoDataService $demo, ForecastService $forecasts): JsonResponse
     {
         $validated = $request->validate(['profile' => ['required', Rule::in(UsageProfiles::PROFILES)]]);
+        $total = $demo->generate($request->user(), $validated['profile']);
 
         return response()->json(['data' => [
             'days' => DemoDataService::DAYS,
-            'total_bytes' => $demo->generate($request->user(), $validated['profile']),
-            'forecast' => null,
+            'total_bytes' => $total,
+            'forecast' => $this->forecast($request, $forecasts),
         ]], 201);
+    }
+
+    private function forecast(Request $request, ForecastService $forecasts): ?ForecastResource
+    {
+        $forecast = $forecasts->recompute($request->user());
+
+        return $forecast ? new ForecastResource($forecast) : null;
     }
 
     /** GET /usage/summary (FR-8). */

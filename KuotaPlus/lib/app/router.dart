@@ -11,6 +11,7 @@ import '../core/models/quota_package.dart';
 import '../features/packages/ui/checkout_screen.dart';
 import '../features/packages/ui/packages_screen.dart';
 import '../features/packages/ui/topup_screen.dart';
+import '../features/recommendations/ui/recommendations_screen.dart';
 import '../features/transactions/ui/history_screen.dart';
 import '../features/transactions/ui/payment_screen.dart';
 import '../features/transactions/ui/transaction_detail_screen.dart';
@@ -58,9 +59,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/topup', builder: (context, state) => const TopupScreen()),
       GoRoute(
         path: '/packages/:id/checkout',
-        // Data paket dibawa dari katalog; saat halaman web di-refresh, kembali ke katalog.
-        redirect: (context, state) => state.extra is QuotaPackage ? null : '/packages',
-        builder: (context, state) => CheckoutScreen(package: state.extra! as QuotaPackage),
+        // Data paket dibawa dari katalog atau rekomendasi (paket, id rekomendasi);
+        // saat halaman web di-refresh data itu hilang, jadi kembali ke katalog.
+        redirect: (context, state) => state.extra is QuotaPackage || state.extra is (QuotaPackage, int) ? null : '/packages',
+        builder: (context, state) => switch (state.extra) {
+          (QuotaPackage package, int recommendationId) =>
+            CheckoutScreen(package: package, recommendationId: recommendationId),
+          final extra => CheckoutScreen(package: extra! as QuotaPackage),
+        },
       ),
       GoRoute(
         path: '/payment/:id',
@@ -74,6 +80,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(path: '/onboarding/usage-access', builder: (context, state) => const UsageAccessScreen()),
+      GoRoute(path: '/recommendations', builder: (context, state) => const RecommendationsScreen()),
       GoRoute(
         path: '/history/:id',
         builder: (context, state) => TransactionDetailScreen(transactionId: int.parse(state.pathParameters['id']!)),

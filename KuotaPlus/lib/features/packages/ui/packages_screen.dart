@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/theme.dart';
 import '../../../app/widgets.dart';
 import '../../../core/format.dart';
 import '../../../core/models/quota_package.dart';
@@ -89,6 +90,11 @@ class _PackageCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // FR-3.3: rekomendasi utama terbaru untuk pengguna ini.
+            if (p.isRecommended) ...[
+              const StatusChip(label: 'Paling hemat untukmu', color: AppColors.primary),
+              const SizedBox(height: 8),
+            ],
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

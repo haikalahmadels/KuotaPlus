@@ -14,6 +14,7 @@ import '../../../core/api_exception.dart';
 import '../../../core/format.dart';
 import '../../../core/models/transaction.dart';
 import '../../home/providers.dart';
+import '../../packages/providers.dart';
 import '../providers.dart';
 import 'payment_form.dart';
 
@@ -82,8 +83,11 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
 
   /// Pulsa, paket, dan riwayat berubah setelah transaksi selesai.
   void _invalidateAffected() {
-    ref.invalidate(homeProvider);
-    ref.invalidate(transactionHistoryProvider);
+    ref
+      ..invalidate(homeProvider)
+      ..invalidate(transactionHistoryProvider)
+      // Pembelian mengubah belanja 30 hari, jadi rekomendasi dan lencana di katalog ikut berubah.
+      ..invalidate(packagesProvider);
   }
 
   @override

@@ -72,7 +72,11 @@ class HomeAndCatalogTest extends TestCase
             ->assertJsonPath('data.subscriptions.0.main_remaining', 25 * self::GB)
             ->assertJsonPath('data.points', ['balance' => 0, 'streak' => 0])
             ->assertJsonPath('data.usage', ['source' => null, 'last_synced_at' => null])
-            ->assertJsonPath('data.forecast', null);
+            // Belum ada data pemakaian: prediksi belum ditampilkan, tapi jatah harian sudah ada (FR-9.3, FR-9.5).
+            ->assertJsonPath('data.forecast.confidence', 'none')
+            ->assertJsonPath('data.forecast.predicted_empty_at', null)
+            ->assertJsonPath('data.daily_budget.used_today_bytes', 0)
+            ->assertJsonPath('data.recommendation_teaser', null);
     }
 
     public function test_home_lists_current_packages_soonest_first_and_hides_expired(): void
