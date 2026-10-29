@@ -328,6 +328,8 @@ Implementasi `queryDailyMobileUsage`:
 
 Manifest: `<uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />`.
 
+Manifest plugin juga meminta `QUERY_ALL_PACKAGES`. Tanpa izin ini, Android 11+ menyembunyikan aplikasi lain dari `getPackagesForUid()` sehingga semua pemakaian terbaca sebagai "Aplikasi terhapus". Izin ini butuh justifikasi khusus jika aplikasi dirilis ke Play Store; untuk prototipe tidak masalah.
+
 ### Alur sinkronisasi
 
 1. Aplikasi dibuka (Android) → `PUT /device` dengan status izin.

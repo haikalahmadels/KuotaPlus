@@ -8,7 +8,13 @@ import '../../../core/format.dart';
 import '../../../core/models/quota_package.dart';
 import '../../../core/models/subscriber.dart';
 import '../../../core/models/subscription.dart';
+import '../../../core/api_client.dart';
+import '../../../core/platform.dart';
 import '../../auth/providers.dart';
+import '../../usage/data/background_sync.dart';
+import '../../usage/data/device_usage.dart';
+import '../../usage/providers.dart';
+import '../../usage/ui/usage_access_screen.dart';
 import '../data/home_repository.dart';
 import '../providers.dart';
 
@@ -24,7 +30,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    ref.read(homeRepositoryProvider).reportDevice();
+    _onAppOpened();
+  }
+
+  /// FR-7.5: sync pemakaian saat aplikasi dibuka, lalu jadwal 6 jam. Izin belum ada → tawarkan sekali (FR-7.1).
+  Future<void> _onAppOpened() async {
+    if (isAndroidApp) scheduleUsageSync();
+
+    final synced = await reportAndSyncUsage(ref.read(apiClientProvider));
+    if (!mounted) return;
+
+    if (synced) {
+      ref.invalidate(homeProvider);
+      ref.invalidate(usageSummaryProvider);
+    } else if (isAndroidApp && !await hasUsageAccess() && !await usageOnboardingSeen() && mounted) {
+      context.push('/onboarding/usage-access');
+    }
   }
 
   @override

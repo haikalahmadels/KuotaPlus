@@ -351,3 +351,66 @@ Kartu prediksi, jatah harian, rekomendasi, dan poin ditambahkan di M5–M6.
 ### S10 Detail transaksi (M3)
 
 Daftar label–nilai: Item, Harga, Diskon poin (jika ada), Total bayar, Metode, Dibuat, Dibayar, Bayar sebelum (pending), Referensi (`external_ref`, bisa dipilih untuk disalin). Transaksi `pending` punya tombol "Lanjutkan bayar" ke S08 (FR-6.2).
+
+### S03 Izin data pemakaian (M4)
+
+Ditawarkan otomatis sekali setelah login di Android jika izin belum ada; setelah itu lewat tombol "Beri izin" di S11.
+
+```
+┌──────────────────────────────┐
+│ ←  Izin data pemakaian       │
+│ Lihat aplikasi mana yang     │
+│ menghabiskan kuotamu         │
+│ ✓ Yang dibaca: byte data     │  ← FR-7.1: apa yang dibaca,
+│   seluler per aplikasi/hari  │     apa yang tidak, ke mana datanya
+│ ⊘ Yang tidak dibaca: isi     │
+│   trafik, pesan, browsing    │
+│ 🔒 Ke mana: hanya server     │
+│   Kuota+                     │
+│ [  Buka pengaturan izin   ]  │  ← Settings "Akses penggunaan"
+│ [     Pakai Mode Demo     ]  │
+│        Nanti saja            │
+└──────────────────────────────┘
+```
+
+Kembali dari Settings dengan izin aktif: langsung sync lalu layar ditutup.
+
+### S11 Analisis (M4, garis jatah harian di M5)
+
+```
+┌──────────────────────────────┐
+│ Analisis                     │
+│ [Hari ini][ 7 hari ][30 hari]│  ← SegmentedButton
+│ (Data demo) Disinkronkan ... │  ← chip hanya untuk data demo
+│ 💡 TikTok memakai 52,1%      │  ← insight (maks 3)
+│    kuotamu minggu ini.       │
+│ ┌──────────────────────────┐ │
+│ │      ◯ donut 4,9 GB      │ │  ← gradasi biru menurut peringkat,
+│ │ ● TikTok    2,5 GB · 52% │ │     Lainnya abu-abu; legenda membawa
+│ │ ● Instagram 1,1 GB · 24% │ │     identitas (nama + MB + %)
+│ │ ● Lainnya   0,3 GB ·  6% │ │
+│ └──────────────────────────┘ │
+│ Pemakaian harian             │
+│ ▂ ▅ ▂ ▅ ▂ ▃ ▃                │  ← bar biru; hari lonjakan kuning tua
+│ Semua aplikasi               │
+│ ▶ TikTok         2,5 GB      │  ← ketuk → S12
+└──────────────────────────────┘
+```
+
+| State | Tampilan |
+| --- | --- |
+| Belum ada data, web | "Buka Kuota+ di Android untuk mengirim data, atau pakai Mode Demo" (FR-8.6) |
+| Belum ada data, Android tanpa izin | "Beri izin" + "Pakai Mode Demo" (edge case Izin) |
+| Belum ada data, Android dengan izin | Ajakan tarik layar untuk sinkronisasi |
+| Data demo | Chip "Data demo" + tombol "Ganti profil demo" |
+| Tarik ke bawah | Android: sync dari HP dulu, lalu muat ulang |
+
+Warna donut tidak memakai palet kategorikal: semua kombinasi 5 warna yang lolos uji buta warna memakai hijau atau merah, yang di aplikasi ini sudah berarti hemat dan boros.
+
+### S12 Detail aplikasi (M4)
+
+Ikon kategori, dua kartu angka (Total, Rata-rata per hari), dan bar tren harian untuk periode yang sama dengan S11.
+
+### S13 Mode Demo (M4, bottom sheet)
+
+Daftar profil Rina, Budi, Acak dengan deskripsi singkat. Memilih profil membuat data 30 hari dan menutup sheet. `DEVICE_DATA_EXISTS` ditampilkan sebagai pesan di sheet.

@@ -503,6 +503,8 @@ Aturan server:
 - `package_name` yang belum ada di `apps` dibuat dengan kategori `umum` dan ditandai "Belum ditinjau".
 - Delta negatif diabaikan dan dicatat di log.
 - Setelah upsert: kuota dipotong (FR-7.7), forecast dihitung ulang (FR-9.6), alert dievaluasi (FR-13).
+- Kuota hanya dipotong dari paket yang aktif pada `usage_date` bucket itu, supaya riwayat 7 hari pada sync pertama tidak membebani paket yang baru dibeli.
+- Sync pertama dari perangkat menghapus data `source = demo` milik akun itu: data asli menggantikan data demo.
 
 Respons `200`:
 
@@ -566,7 +568,7 @@ Error: `409 DEVICE_DATA_EXISTS` jika pengguna sudah punya data `source = device`
 - `daily.budget_bytes`: jatah harian snapshot hari itu, `null` jika belum ada. `is_spike`: pemakaian > 3× median 7 hari.
 - `insights`: maksimal 3 kalimat (FR-8.5).
 - Belum ada data: `source = null`, semua array kosong. Client menampilkan pesan FR-8.6.
-- Ikon aplikasi tidak dikirim. Android mengambil ikon lokal dari `PackageManager` lewat `package_name`; web memakai ikon kategori.
+- Ikon aplikasi tidak dikirim. Android dan web sama-sama memakai ikon kategori, supaya tampilan konsisten dan tidak butuh kode native tambahan.
 
 #### `GET /usage/apps/{app_id}?period=30d`
 

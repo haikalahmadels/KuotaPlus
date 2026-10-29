@@ -1,0 +1,161 @@
+{
+    "period": "7d",
+    "source": "demo",
+    "last_synced_at": "2026-10-29T17:31:49+07:00",
+    "total_bytes": 5262802944,
+    "top_apps": [
+        {
+            "app_id": 1,
+            "package_name": "com.zhiliaoapp.musically",
+            "label": "TikTok",
+            "category": "video",
+            "bytes": 2739929088,
+            "percent": 52.1
+        },
+        {
+            "app_id": 7,
+            "package_name": "com.instagram.android",
+            "label": "Instagram",
+            "category": "sosmed",
+            "bytes": 1240465408,
+            "percent": 23.6
+        },
+        {
+            "app_id": 18,
+            "package_name": "us.zoom.videomeetings",
+            "label": "Zoom",
+            "category": "belajar",
+            "bytes": 353894400,
+            "percent": 6.7
+        },
+        {
+            "app_id": 3,
+            "package_name": "com.google.android.youtube",
+            "label": "YouTube",
+            "category": "video",
+            "bytes": 350224384,
+            "percent": 6.7
+        },
+        {
+            "app_id": 6,
+            "package_name": "com.whatsapp",
+            "label": "WhatsApp",
+            "category": "sosmed",
+            "bytes": 266338304,
+            "percent": 5.1
+        },
+        {
+            "app_id": null,
+            "package_name": null,
+            "label": "Lainnya",
+            "category": null,
+            "bytes": 311951360,
+            "percent": 5.9
+        }
+    ],
+    "apps": [
+        {
+            "app_id": 1,
+            "package_name": "com.zhiliaoapp.musically",
+            "label": "TikTok",
+            "category": "video",
+            "bytes": 2739929088,
+            "percent": 52.1
+        },
+        {
+            "app_id": 7,
+            "package_name": "com.instagram.android",
+            "label": "Instagram",
+            "category": "sosmed",
+            "bytes": 1240465408,
+            "percent": 23.6
+        },
+        {
+            "app_id": 18,
+            "package_name": "us.zoom.videomeetings",
+            "label": "Zoom",
+            "category": "belajar",
+            "bytes": 353894400,
+            "percent": 6.7
+        },
+        {
+            "app_id": 3,
+            "package_name": "com.google.android.youtube",
+            "label": "YouTube",
+            "category": "video",
+            "bytes": 350224384,
+            "percent": 6.7
+        },
+        {
+            "app_id": 6,
+            "package_name": "com.whatsapp",
+            "label": "WhatsApp",
+            "category": "sosmed",
+            "bytes": 266338304,
+            "percent": 5.1
+        },
+        {
+            "app_id": 23,
+            "package_name": "com.android.chrome",
+            "label": "Chrome",
+            "category": "umum",
+            "bytes": 178782208,
+            "percent": 3.4
+        },
+        {
+            "app_id": 31,
+            "package_name": "android.system",
+            "label": "Sistem Android",
+            "category": "sistem",
+            "bytes": 133169152,
+            "percent": 2.5
+        }
+    ],
+    "daily": [
+        {
+            "date": "2026-10-23",
+            "bytes": 723517440,
+            "budget_bytes": null,
+            "is_spike": false
+        },
+        {
+            "date": "2026-10-24",
+            "bytes": 880803840,
+            "budget_bytes": null,
+            "is_spike": false
+        },
+        {
+            "date": "2026-10-25",
+            "bytes": 880803840,
+            "budget_bytes": null,
+            "is_spike": false
+        },
+        {
+            "date": "2026-10-26",
+            "bytes": 723517440,
+            "budget_bytes": null,
+            "is_spike": false
+        },
+        {
+            "date": "2026-10-27",
+            "bytes": 985661440,
+            "budget_bytes": null,
+            "is_spike": false
+        },
+        {
+            "date": "2026-10-28",
+            "bytes": 723517440,
+            "budget_bytes": null,
+            "is_spike": false
+        },
+        {
+            "date": "2026-10-29",
+            "bytes": 344981504,
+            "budget_bytes": null,
+            "is_spike": false
+        }
+    ],
+    "insights": [
+        "TikTok memakai 52,1% kuotamu minggu ini."
+    ]
+}

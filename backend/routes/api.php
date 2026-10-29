@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\TransactionController;
+use App\Http\Controllers\Api\UsageController;
 use Illuminate\Support\Facades\Route;
 
 // Endpoint ditambahkan per milestone sesuai docs/PLAN-KuotaPlus.md.
@@ -26,4 +27,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('transactions', [TransactionController::class, 'store']);
     Route::get('transactions', [TransactionController::class, 'index']);
     Route::get('transactions/{id}', [TransactionController::class, 'show'])->whereNumber('id');
+
+    Route::post('usage/sync', [UsageController::class, 'sync']);
+    Route::post('usage/demo', [UsageController::class, 'demo']);
+    Route::get('usage/summary', [UsageController::class, 'summary']);
+    Route::get('usage/apps/{id}', [UsageController::class, 'app'])->whereNumber('id');
 });

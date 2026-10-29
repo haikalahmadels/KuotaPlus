@@ -14,6 +14,9 @@ import '../features/packages/ui/topup_screen.dart';
 import '../features/transactions/ui/history_screen.dart';
 import '../features/transactions/ui/payment_screen.dart';
 import '../features/transactions/ui/transaction_detail_screen.dart';
+import '../features/usage/ui/analysis_screen.dart';
+import '../features/usage/ui/app_usage_screen.dart';
+import '../features/usage/ui/usage_access_screen.dart';
 import 'shell.dart';
 import 'widgets.dart';
 
@@ -46,7 +49,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         branches: [
           _tab('/home', const HomeScreen()),
           _tab('/packages', const PackagesScreen()),
-          _tab('/usage', const ComingSoonScreen(title: 'Analisis')),
+          _tab('/usage', const AnalysisScreen()),
           _tab('/rewards', const ComingSoonScreen(title: 'Reward')),
           _tab('/history', const HistoryScreen()),
         ],
@@ -63,6 +66,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/payment/:id',
         builder: (context, state) => PaymentScreen(transactionId: int.parse(state.pathParameters['id']!)),
       ),
+      GoRoute(
+        path: '/usage/apps/:id',
+        builder: (context, state) => AppUsageScreen(
+          appId: int.parse(state.pathParameters['id']!),
+          period: state.uri.queryParameters['period'] ?? '7d',
+        ),
+      ),
+      GoRoute(path: '/onboarding/usage-access', builder: (context, state) => const UsageAccessScreen()),
       GoRoute(
         path: '/history/:id',
         builder: (context, state) => TransactionDetailScreen(transactionId: int.parse(state.pathParameters['id']!)),

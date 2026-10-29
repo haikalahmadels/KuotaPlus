@@ -1,0 +1,12 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- Izin Usage Access diberikan pengguna lewat Settings (FR-7.1), bukan dialog izin biasa. -->
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+    <!-- Android 11+: tanpa ini getPackagesForUid() menyembunyikan aplikasi lain dan semua pemakaian jadi "Aplikasi terhapus".
+         Hanya untuk prototipe; aplikasi di Play Store butuh justifikasi khusus untuk izin ini. -->
+    <uses-permission
+        android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
+</manifest>

@@ -6,7 +6,6 @@ import '../../../core/api_client.dart';
 import '../../../core/api_exception.dart';
 import '../../../core/models/subscriber.dart';
 import '../../../core/models/subscription.dart';
-import '../../../core/platform.dart';
 
 /// Isi `GET /home` yang dipakai di M2. Prediksi, rekomendasi, dan alert ditambahkan di M5–M7.
 class HomeData {
@@ -56,15 +55,6 @@ class HomeRepository {
       final cached = prefs.getString(_cacheKey);
       if (!e.isNetwork || cached == null) rethrow;
       return HomeSnapshot(HomeData.fromJson(jsonDecode(cached) as Map<String, dynamic>), fromCache: true);
-    }
-  }
-
-  /// Status izin Usage Access untuk metrik admin. Izin sungguhan dibaca di M4.
-  Future<void> reportDevice() async {
-    try {
-      await _api.put('/device', data: {'platform': isAndroidApp ? 'android' : 'web', 'usage_access_granted': false});
-    } on ApiException {
-      // Tidak penting bagi pengguna; dicoba lagi saat aplikasi dibuka berikutnya.
     }
   }
 }
