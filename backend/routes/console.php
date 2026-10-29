@@ -6,7 +6,10 @@ use App\Models\Transaction;
 use App\Models\User;
 use App\Services\ForecastService;
 use App\Services\PaymentService;
+use App\Services\PointService;
+use App\Services\RewardService;
 use App\Services\SettingService;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schedule;
@@ -61,7 +64,31 @@ Artisan::command('forecasts:daily', function (ForecastService $forecasts) {
     $this->info("{$users->count()} prediksi dihitung ulang.");
 })->purpose('Jatah harian dan prediksi dihitung ulang 00:00 (FR-9.5); juga snapshot jatah untuk evaluasi reward');
 
+Artisan::command('rewards:evaluate {date? : Tanggal yang dievaluasi, default kemarin}', function (RewardService $rewards) {
+    $date = $this->argument('date') ? Carbon::parse($this->argument('date')) : today()->subDay();
+    // Hanya pengguna yang punya prediksi hari itu = punya paket aktif (RewardService).
+    $users = User::whereHas('forecasts', fn ($q) => $q->whereBetween('computed_at', [$date->copy()->startOfDay(), $date->copy()->endOfDay()]))->get();
+    $evaluated = $users->filter(fn (User $user) => $rewards->evaluate($user, $date))->count();
+
+    $this->info("{$evaluated} pengguna dievaluasi untuk {$date->toDateString()}.");
+})->purpose('Evaluasi hari hemat dan poin untuk hari kemarin (FR-11.1)');
+
+Artisan::command('points:expire', function (PointService $points) {
+    $total = 0;
+    User::whereHas('pointLedger')->each(function (User $user) use ($points, &$total) {
+        $total += DB::transaction(function () use ($user, $points) {
+            User::whereKey($user->id)->lockForUpdate()->first();
+
+            return $points->expire($user);
+        });
+    });
+
+    $this->info("{$total} poin kedaluwarsa.");
+})->purpose('Poin lewat masa berlaku dicatat sebagai delta negatif, FIFO, tanpa menyentuh hold (FR-11.6)');
+
 Schedule::command('transactions:expire')->everyMinute();
 Schedule::command('subscriptions:expire')->everyMinute();
 Schedule::command('forecasts:daily')->dailyAt('00:00');
 Schedule::command('subscribers:status')->dailyAt('00:01');
+Schedule::command('rewards:evaluate')->dailyAt('00:05');
+Schedule::command('points:expire')->dailyAt('00:10');

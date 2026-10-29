@@ -16,7 +16,11 @@ use Illuminate\Support\Facades\DB;
  */
 class PaymentService
 {
-    public function __construct(private SettingService $settings, private ForecastService $forecasts) {}
+    public function __construct(
+        private SettingService $settings,
+        private ForecastService $forecasts,
+        private PointService $points,
+    ) {}
 
     public static function sign(string $rawBody): string
     {
@@ -76,7 +80,7 @@ class PaymentService
             $this->provision($transaction);
         } else {
             $transaction->update(['status' => 'failed']);
-            // Pengembalian poin yang di-hold ditambahkan di M6 (FR-12.3).
+            $this->points->release($transaction); // FR-12.3
         }
 
         return null;
@@ -86,7 +90,7 @@ class PaymentService
     public function expire(Transaction $transaction): void
     {
         $transaction->update(['status' => 'expired']);
-        // Pengembalian poin yang di-hold ditambahkan di M6 (FR-12.3).
+        $this->points->release($transaction); // FR-12.3
     }
 
     /**

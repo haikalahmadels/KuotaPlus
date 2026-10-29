@@ -127,3 +127,25 @@ class RecommendationTeaser extends StatelessWidget {
     );
   }
 }
+
+/// FR-2.4: saldo poin di beranda, ke layar Reward.
+class PointsTile extends StatelessWidget {
+  const PointsTile({super.key, required this.balance, required this.streak});
+
+  final int balance;
+  final int streak;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: const Icon(Icons.stars_outlined, color: AppColors.primary),
+        title: Text('$balance poin'),
+        subtitle: Text(streak > 0 ? '$streak hari hemat berturut-turut' : 'Hemat hari ini untuk dapat poin'),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => context.go('/rewards'),
+      ),
+    );
+  }
+}

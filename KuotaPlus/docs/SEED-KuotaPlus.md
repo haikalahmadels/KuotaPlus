@@ -319,21 +319,22 @@ Logika ini sama dengan job harian FR-11. Seeder sebaiknya memanggil service yang
 
 ## Hasil yang diharapkan
 
-Cek ini dijalankan setelah `migrate:fresh --seed`. Angka bertanda ≈ bergantung pada hari dalam seminggu saat seeder dijalankan.
+Cek ini dijalankan setelah `migrate:fresh --seed` dan dijaga oleh `tests/Feature/DemoAccountSeederTest.php`. Angka bertanda ≈ bergantung pada hari dalam seminggu saat seeder dijalankan. Angka poin sudah pasti karena seeder memutar ulang evaluasi harian dengan `RewardService` yang sama dengan job 00:05.
 
 | Akun | Endpoint | Hasil |
 | --- | --- | --- |
 | Rina | `GET /home` | Forecast `high`, `risk`, habis ≈ D+7, `days_early` ≈ 11. Satu paket aktif BL15 dengan sisa ≈ 5,3 GB |
 | Rina | `GET /recommendations` | `ok`. Rank 1 **VID30** (Rp65.000, sisa ≈ 2 GB). Alternatif: HR3 (Rp120.000), BL50 (Rp135.000). `saving_30d` = Rp75.000 − Rp65.000 = **Rp10.000**. BL25 **tidak** cukup karena kebutuhan ≈ 25,2–26,6 GB |
-| Rina | `GET /points` | Saldo ≈ 520, streak 0, `expiring_soon` 60 poin. Saat checkout VID30, poin maksimal 500 (Rp5.000) |
+| Rina | `GET /points` | Saldo **520**, streak 0, `expiring_soon` terisi (poin libur semester). Saat checkout VID30, poin maksimal 500 (Rp5.000) |
 | Rina | `POST /transactions` VID30 metode pulsa | `422 INSUFFICIENT_BALANCE`, `shortfall` Rp52.500 (atau Rp47.500 jika memakai 500 poin) |
 | Budi | `GET /home` | Forecast `high`, `safe`. Sisa BL50 ≈ 38,5 GB |
 | Budi | `GET /recommendations` | `ok`. Rank 1 **BL15** (Rp55.000, sisa ≈ 2,8 GB). Alternatif: VID30 (Rp65.000), BL25 (Rp80.000). `saving_30d` = Rp135.000 − Rp55.000 = **Rp80.000** |
 | Budi | `GET /usage/summary?period=30d` | Insight lonjakan pada D-9. Hari D-9 `is_spike = true` |
-| Budi | `GET /points` | Streak ≈ 8 (lonjakan D-9 membuat hari itu boros) |
+| Budi | `GET /points` | Saldo **290** (30 hari evaluasi − 200 poin berbagi), streak **8** (lonjakan D-9 membuat hari itu boros) |
 | Budi | `GET /quota-transfers/quote` | `remaining_bytes` 1 GB, `recovers_at` D+20 |
 | Dimas | `GET /home` | Forecast `low` (5 hari data), alert `package_expiring` |
 | Dimas | `GET /recommendations` | `insufficient_data` |
+| Dimas | `GET /points` | Saldo **50**, streak 5 |
 | Sari | `POST /transactions` paket | `403 SUBSCRIBER_IN_GRACE` |
 | 0006 | `POST /auth/otp/request` | `403 SUBSCRIBER_TERMINATED` |
 | 0881-9999-9999 | `POST /auth/otp/request` | `404 NOT_SUBSCRIBER` |

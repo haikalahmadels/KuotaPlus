@@ -112,6 +112,8 @@ class _HomeContent extends StatelessWidget {
           const SizedBox(height: 12),
           DailyBudgetCard(budgetBytes: data.dailyBudget!.budgetBytes, usedTodayBytes: data.dailyBudget!.usedTodayBytes),
         ],
+        const SizedBox(height: 12),
+        PointsTile(balance: data.points.balance, streak: data.points.streak),
         if (data.teaser != null) ...[
           const SizedBox(height: 12),
           RecommendationTeaser(packageName: data.teaser!.packageName, saving: data.teaser!.saving),

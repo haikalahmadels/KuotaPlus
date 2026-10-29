@@ -21,6 +21,7 @@ class TransactionRepository {
     int? packageId,
     int? topupAmount,
     int? recommendationId,
+    int pointsUsed = 0,
   }) async {
     final body = await _api.post(
       '/transactions',
@@ -31,6 +32,7 @@ class TransactionRepository {
         'package_id': ?packageId,
         'topup_amount': ?topupAmount,
         'recommendation_id': ?recommendationId,
+        if (pointsUsed > 0) 'points_used': pointsUsed,
       },
     );
     return Transaction.fromJson(body['data'] as Map<String, dynamic>);

@@ -474,3 +474,50 @@ Disisipkan di bawah kartu Pulsa, sebelum "Kuota aktif":
 | Tidak ada paket yang cukup | "Belum ada paket di katalog yang cukup untuk pemakaianmu" |
 
 S05 Katalog: paket rank 1 diberi chip "Paling hemat untukmu" (FR-3.3). S11 Analisis: bar harian diberi garis putus-putus "Jatah X" (FR-8.3).
+
+### S06 Checkout: tukar poin (M6)
+
+Kartu "Tukar poin" di antara kartu paket dan metode pembayaran:
+
+```
+┌──────────────────────────┐
+│ Tukar poin               │
+│ Saldo 520 poin · 1 poin  │
+│ = Rp10                   │
+│ ●━━━━━━━━━━━━○           │  ← Slider, kelipatan redeem_step, maks = PointRules.maxPointsFor(harga)
+│ 500 poin = diskon Rp5.000│
+│              [Pakai 500] │
+│ Maksimal 20% dari harga, │
+│ kelipatan 100 poin.      │
+└──────────────────────────┘
+Harga paket        Rp65.000
+Diskon 500 poin    -Rp5.000
+Total bayar        Rp60.000
+```
+
+Saldo di bawah 100 poin: "Kumpulkan minimal 100 poin untuk mendapat diskon". Jumlah poin berubah = Idempotency-Key baru.
+
+### S15 Reward (M6)
+
+```
+┌──────────────────────────────┐
+│ Reward              Riwayat  │  ← ke S16
+│ ┌──────────────────────────┐ │
+│ │ Saldo poin   Hari hemat  │ │
+│ │ 520          beruntun  4 │ │
+│ └──────────────────────────┘ │
+│ ⌛ 50 poin kedaluwarsa mulai  │  ← hanya jika ada dalam 7 hari
+│    1 Nov 2026                │
+│ 30 hari terakhir             │
+│ [30][31][ 1][ 2][ 3][ 4][ 5] │  ← sel: tanggal + ikon ✓ (hemat, success)
+│ [ 6][ 7] …                   │     ✕ (boros, danger), – (tidak ada data, abu-abu)
+│ ✓ Hemat  ✕ Boros  – Tidak ada│  ← legenda: status tidak hanya lewat warna
+│ Cara dapat poin              │
+└──────────────────────────────┘
+```
+
+Beranda (S04) juga menampilkan baris "X poin · N hari hemat berturut-turut" yang membuka tab Reward (FR-2.4).
+
+### S16 Riwayat poin (M6)
+
+Daftar terbaru di atas: keterangan dari server (misalnya "Hari hemat 15 Okt", "Diskon Video 30 Hari", "Poin dikembalikan: pembayaran gagal"), waktu, dan delta (+ hijau, − teks biasa). Tombol "Muat lagi" untuk halaman berikutnya.

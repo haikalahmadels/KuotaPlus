@@ -17,8 +17,8 @@ class StoreTransactionRequest extends FormRequest
             'type' => ['required', 'in:package,topup'],
             'package_id' => ['required_if:type,package', 'prohibited_if:type,topup', 'nullable', 'integer'],
             'topup_amount' => ['required_if:type,topup', 'prohibited_if:type,package', 'nullable', 'integer', Rule::in($topupAmounts)],
-            // Tukar poin baru tersedia di M6 (FR-12).
-            'points_used' => ['nullable', 'integer', 'in:0'],
+            // FR-12.1: tukar poin hanya untuk paket. Aturan kelipatan dan batas dicek TransactionService (POINTS_INVALID).
+            'points_used' => ['nullable', 'integer', 'min:0', 'prohibited_if:type,topup'],
             // FR-4.2: isi ulang tidak bisa dibayar dengan pulsa.
             'payment_method' => ['required', Rule::in($isTopup ? ['ewallet', 'va', 'qris'] : ['pulsa', 'ewallet', 'va', 'qris'])],
             'recommendation_id' => ['nullable', 'integer', 'prohibited_if:type,topup',

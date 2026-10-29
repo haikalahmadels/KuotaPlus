@@ -8,7 +8,7 @@ class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database.
-     * Urutan mengikuti docs/SEED-KuotaPlus.md. DemoAccountSeeder ditambahkan di M6.
+     * Urutan mengikuti docs/SEED-KuotaPlus.md.
      */
     public function run(): void
     {
@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             AppSeeder::class,
             PackageSeeder::class,
             SubscriberSeeder::class,
+            DemoAccountSeeder::class,
         ]);
     }
 }

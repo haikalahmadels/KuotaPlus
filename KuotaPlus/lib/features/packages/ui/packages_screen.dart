@@ -29,7 +29,7 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen> {
       body: switch (groups) {
         AsyncData(:final value) => RefreshIndicator(
             onRefresh: () => ref.refresh(packagesProvider.future),
-            child: _content(value),
+            child: _content(value.groups),
           ),
         AsyncError(:final error) => ErrorRetry(error: error, onRetry: () => ref.invalidate(packagesProvider)),
         _ => const Center(child: CircularProgressIndicator()),

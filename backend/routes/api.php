@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\HomeController;
+use App\Http\Controllers\Api\PointsController;
 use App\Http\Controllers\Api\RecommendationController;
 use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\Api\UsageController;
@@ -36,4 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('recommendations', [RecommendationController::class, 'index']);
     Route::post('recommendations/{id}/click', [RecommendationController::class, 'click'])->whereNumber('id');
+
+    Route::get('points', [PointsController::class, 'show']);
+    Route::get('points/ledger', [PointsController::class, 'ledger']);
 });

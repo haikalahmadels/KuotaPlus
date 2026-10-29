@@ -245,7 +245,7 @@ Tujuannya meniru alur gateway nyata, termasuk status asinkron dan callback.
 
 ### FR-11 Reward poin hemat
 
-1. Job harian 00:05 WIB mengevaluasi hari kemarin untuk setiap pengguna yang punya paket aktif.
+1. Job harian 00:05 WIB mengevaluasi hari kemarin untuk setiap pengguna yang punya paket aktif. Jatah yang dipakai = jatah harian tertinggi yang dihitung pada hari itu: snapshot 00:00, atau setelah membeli paket (FR-9.5). Berbagi kuota dan pemakaian hanya menurunkan jatah, sehingga tidak mengubah penilaian (FR-14.14).
 2. **Hari hemat** = pemakaian kemarin ≤ jatah harian kemarin **dan** pemakaian ≥ 50 MB (*usulan*, OQ-4). Batas minimum ini mencegah orang mematikan data hanya demi poin.
 3. Hari hemat memberi +10 poin. Setiap kelipatan 7 hari hemat berturut-turut memberi bonus +50 poin. Satu hari bukan-hemat mengembalikan streak ke 0 (*usulan*, OQ-3).
 4. Hari dengan data tidak lengkap (tidak ada sync sama sekali hari itu) tidak dievaluasi. Streak tidak putus, tetapi tidak ada poin.

@@ -31,26 +31,6 @@ class ErrorRetry extends StatelessWidget {
   }
 }
 
-/// Tab yang belum dibuat di milestone ini.
-class ComingSoonScreen extends StatelessWidget {
-  const ComingSoonScreen({super.key, required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(
-        child: Text(
-          'Fitur ini sedang disiapkan.',
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
-        ),
-      ),
-    );
-  }
-}
-
 /// Label status berbingkai. Warna selalu disertai teks, tidak pernah sendirian (docs/UI-KuotaPlus.md).
 class StatusChip extends StatelessWidget {
   const StatusChip({super.key, required this.label, required this.color});

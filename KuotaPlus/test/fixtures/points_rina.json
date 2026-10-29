@@ -1,0 +1,167 @@
+{
+    "balance": 520,
+    "held": 0,
+    "streak": 0,
+    "expiring_soon": {
+        "points": 50,
+        "first_expires_at": "2026-11-01"
+    },
+    "calendar": [
+        {
+            "date": "2026-09-29",
+            "result": "boros",
+            "points": 0
+        },
+        {
+            "date": "2026-09-30",
+            "result": "boros",
+            "points": 0
+        },
+        {
+            "date": "2026-10-01",
+            "result": "boros",
+            "points": 0
+        },
+        {
+            "date": "2026-10-02",
+            "result": "boros",
+            "points": 0
+        },
+        {
+            "date": "2026-10-03",
+            "result": "boros",
+            "points": 0
+        },
+        {
+            "date": "2026-10-04",
+            "result": "boros",
+            "points": 0
+        },
+        {
+            "date": "2026-10-05",
+            "result": "boros",
+            "points": 0
+        },
+        {
+            "date": "2026-10-06",
+            "result": "boros",
+            "points": 0
+        },
+        {
+            "date": "2026-10-07",
+            "result": "no_data",
+            "points": 0
+        },
+        {
+            "date": "2026-10-08",
+            "result": "hemat",
+            "points": 10
+        },
+        {
+            "date": "2026-10-09",
+            "result": "no_data",
+            "points": 0
+        },
+        {
+            "date": "2026-10-10",
+            "result": "hemat",
+            "points": 10
+        },
+        {
+            "date": "2026-10-11",
+            "result": "no_data",
+            "points": 0
+        },
+        {
+            "date": "2026-10-12",
+            "result": "no_data",
+            "points": 0
+        },
+        {
+            "date": "2026-10-13",
+            "result": "hemat",
+            "points": 10
+        },
+        {
+            "date": "2026-10-14",
+            "result": "no_data",
+            "points": 0
+        },
+        {
+            "date": "2026-10-15",
+            "result": "hemat",
+            "points": 10
+        },
+        {
+            "date": "2026-10-16",
+            "result": "no_data",
+            "points": 0
+        },
+        {
+            "date": "2026-10-17",
+            "result": "boros",
+            "points": 0
+        },
+        {
+            "date": "2026-10-18",
+            "result": "boros",
+            "points": 0
+        },
+        {
+            "date": "2026-10-19",
+            "result": "boros",
+            "points": 0
+        },
+        {
+            "date": "2026-10-20",
+            "result": "boros",
+            "points": 0
+        },
+        {
+            "date": "2026-10-21",
+            "result": "boros",
+            "points": 0
+        },
+        {
+            "date": "2026-10-22",
+            "result": "boros",
+            "points": 0
+        },
+        {
+            "date": "2026-10-23",
+            "result": "boros",
+            "points": 0
+        },
+        {
+            "date": "2026-10-24",
+            "result": "boros",
+            "points": 0
+        },
+        {
+            "date": "2026-10-25",
+            "result": "boros",
+            "points": 0
+        },
+        {
+            "date": "2026-10-26",
+            "result": "boros",
+            "points": 0
+        },
+        {
+            "date": "2026-10-27",
+            "result": "boros",
+            "points": 0
+        },
+        {
+            "date": "2026-10-28",
+            "result": "boros",
+            "points": 0
+        }
+    ],
+    "rules": {
+        "points_per_day": 10,
+        "streak_bonus": 50,
+        "streak_length": 7,
+        "min_usage_bytes": 52428800
+    }
+}

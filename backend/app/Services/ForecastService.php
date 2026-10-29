@@ -23,8 +23,12 @@ class ForecastService
             return null;
         }
 
-        // "Paket utama" = paket dengan kuota utama terbesar; seri → yang berakhir paling akhir.
-        $main = $subscriptions->sortByDesc(fn ($s) => [$s->main_total, $s->expires_at->timestamp])->first();
+        // "Paket utama" = paket dengan kuota utama terbesar yang kuotanya belum habis; seri → yang berakhir paling akhir.
+        // Paket lama yang sudah habis tidak boleh menjadi acuan jatah harian paket darurat yang baru dibeli.
+        $candidates = $subscriptions->where('status', 'active');
+        $main = ($candidates->isEmpty() ? $subscriptions : $candidates)
+            ->sortByDesc(fn ($s) => [$s->main_total, $s->expires_at->timestamp])
+            ->first();
 
         // FR-9.2: kuota aplikasi hanya dihitung untuk kategori yang memang dipakai pengguna.
         $usedCategories = $this->categoryBytes($user, 30)->filter()->keys();

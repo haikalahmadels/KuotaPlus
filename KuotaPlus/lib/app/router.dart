@@ -12,6 +12,8 @@ import '../features/packages/ui/checkout_screen.dart';
 import '../features/packages/ui/packages_screen.dart';
 import '../features/packages/ui/topup_screen.dart';
 import '../features/recommendations/ui/recommendations_screen.dart';
+import '../features/rewards/ui/ledger_screen.dart';
+import '../features/rewards/ui/rewards_screen.dart';
 import '../features/transactions/ui/history_screen.dart';
 import '../features/transactions/ui/payment_screen.dart';
 import '../features/transactions/ui/transaction_detail_screen.dart';
@@ -19,7 +21,6 @@ import '../features/usage/ui/analysis_screen.dart';
 import '../features/usage/ui/app_usage_screen.dart';
 import '../features/usage/ui/usage_access_screen.dart';
 import 'shell.dart';
-import 'widgets.dart';
 
 /// Peta route lengkap ada di docs/UI-KuotaPlus.md. Route ditambahkan per milestone.
 final routerProvider = Provider<GoRouter>((ref) {
@@ -51,7 +52,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           _tab('/home', const HomeScreen()),
           _tab('/packages', const PackagesScreen()),
           _tab('/usage', const AnalysisScreen()),
-          _tab('/rewards', const ComingSoonScreen(title: 'Reward')),
+          _tab('/rewards', const RewardsScreen()),
           _tab('/history', const HistoryScreen()),
         ],
       ),
@@ -81,6 +82,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: '/onboarding/usage-access', builder: (context, state) => const UsageAccessScreen()),
       GoRoute(path: '/recommendations', builder: (context, state) => const RecommendationsScreen()),
+      GoRoute(path: '/rewards/ledger', builder: (context, state) => const LedgerScreen()),
       GoRoute(
         path: '/history/:id',
         builder: (context, state) => TransactionDetailScreen(transactionId: int.parse(state.pathParameters['id']!)),

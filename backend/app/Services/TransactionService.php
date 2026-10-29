@@ -19,7 +19,11 @@ class TransactionService
 {
     public const PENDING_MINUTES = 15;
 
-    public function __construct(private PaymentService $payments, private SettingService $settings) {}
+    public function __construct(
+        private PaymentService $payments,
+        private SettingService $settings,
+        private PointService $points,
+    ) {}
 
     /**
      * @param  array{type: string, package_id?: int, topup_amount?: int, points_used?: int, payment_method: string, recommendation_id?: int}  $input  sudah divalidasi
@@ -81,7 +85,12 @@ class TransactionService
             $payload['extend_days'] = collect($this->settings->get('topup.options'))->firstWhere('amount', $gross)['extend_days'];
         }
 
-        $net = $gross; // Diskon poin ditambahkan di M6 (FR-12).
+        $points = $input['points_used'];
+        $discount = $points * $this->settings->int('points.rupiah_per_point');
+        if ($points > 0) {
+            $this->validatePoints($user, $gross, $points);
+        }
+        $net = $gross - $discount;
         $isPulsa = $input['payment_method'] === 'pulsa';
 
         if ($isPulsa && $subscriber->pulsa_balance < $net) {
@@ -96,8 +105,8 @@ class TransactionService
             'package_id' => $input['package_id'],
             'topup_amount' => $input['topup_amount'],
             'gross_amount' => $gross,
-            'discount_amount' => 0,
-            'points_used' => $input['points_used'],
+            'discount_amount' => $discount,
+            'points_used' => $points,
             'net_amount' => $net,
             'payment_method' => $input['payment_method'],
             'status' => 'pending',
@@ -109,6 +118,10 @@ class TransactionService
             'expires_at' => $isPulsa ? null : now()->addMinutes(self::PENDING_MINUTES),
         ]);
 
+        if ($points > 0) {
+            $this->points->hold($user, $points, $transaction);
+        }
+
         if ($isPulsa) {
             // FR-5.9: saldo dicek dan dipotong dalam transaksi DB yang sama dengan baris subscriber terkunci.
             $subscriber->decrement('pulsa_balance', $net);
@@ -117,6 +130,28 @@ class TransactionService
         }
 
         return $transaction;
+    }
+
+    /**
+     * FR-12.2, FR-12.4: kelipatan redeem_step, ≤ poin yang bisa dipakai, diskon ≤ batas persen harga paket,
+     * dan total bayar ≥ minimal. meta.max_points = nilai terbesar yang sah, untuk dikoreksi client.
+     */
+    private function validatePoints(User $user, int $price, int $points): void
+    {
+        $rate = $this->settings->int('points.rupiah_per_point');
+        $step = $this->settings->int('points.redeem_step');
+        $limit = min(
+            $this->points->available($user),
+            intdiv(intdiv($price * $this->settings->int('points.max_discount_percent'), 100), $rate),
+            intdiv(max(0, $price - $this->settings->int('points.min_net_amount')), $rate),
+        );
+        $max = intdiv($limit, $step) * $step;
+
+        if ($points % $step !== 0 || $points > $max) {
+            throw new ApiException(422, 'POINTS_INVALID',
+                $max === 0 ? 'Poin belum bisa dipakai untuk paket ini.' : "Poin yang bisa dipakai maksimal {$max}, kelipatan {$step}.",
+                ['max_points' => $max]);
+        }
     }
 
     /** Instruksi bayar dummy (FR-5.3). String QRIS dan URL simulator dibentuk TransactionResource. */

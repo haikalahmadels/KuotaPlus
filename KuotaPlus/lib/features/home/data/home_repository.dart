@@ -8,7 +8,7 @@ import '../../../core/models/forecast.dart';
 import '../../../core/models/subscriber.dart';
 import '../../../core/models/subscription.dart';
 
-/// Isi `GET /home`. Poin dan alert ditambahkan di M6–M7.
+/// Isi `GET /home`. Alert ditambahkan di M7.
 class HomeData {
   const HomeData({
     required this.serverTime,
@@ -17,6 +17,7 @@ class HomeData {
     this.forecast,
     this.dailyBudget,
     this.teaser,
+    this.points = (balance: 0, streak: 0),
   });
 
   factory HomeData.fromJson(Map<String, dynamic> json) {
@@ -33,6 +34,7 @@ class HomeData {
       dailyBudget: budget == null
           ? null
           : (budgetBytes: budget['budget_bytes'] as int, usedTodayBytes: budget['used_today_bytes'] as int),
+      points: (balance: json['points']['balance'] as int, streak: json['points']['streak'] as int),
       teaser: teaser == null
           ? null
           : (
@@ -53,6 +55,9 @@ class HomeData {
 
   /// Ada hanya jika rekomendasi utama memberi penghematan (FR-2.4).
   final ({int recommendationId, String packageName, int saving})? teaser;
+
+  /// Saldo poin dan streak hari hemat (FR-2.4).
+  final ({int balance, int streak}) points;
 }
 
 class HomeSnapshot {
