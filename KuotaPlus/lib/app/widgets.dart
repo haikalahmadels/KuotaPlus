@@ -50,3 +50,23 @@ class ComingSoonScreen extends StatelessWidget {
     );
   }
 }
+
+/// Label status berbingkai. Warna selalu disertai teks, tidak pernah sendirian (docs/UI-KuotaPlus.md).
+class StatusChip extends StatelessWidget {
+  const StatusChip({super.key, required this.label, required this.color});
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        border: Border.all(color: color),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(label, style: Theme.of(context).textTheme.labelLarge?.copyWith(color: color)),
+    );
+  }
+}

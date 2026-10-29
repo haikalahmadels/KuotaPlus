@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../app/widgets.dart';
 import '../../../core/format.dart';
@@ -105,9 +106,7 @@ class _PackageCard extends StatelessWidget {
             Align(
               alignment: Alignment.centerRight,
               child: FilledButton(
-                onPressed: () => ScaffoldMessenger.of(context)
-                  ..hideCurrentSnackBar()
-                  ..showSnackBar(const SnackBar(content: Text('Pembelian segera tersedia.'))),
+                onPressed: () => context.push('/packages/${p.id}/checkout', extra: p),
                 child: const Text('Beli'),
               ),
             ),

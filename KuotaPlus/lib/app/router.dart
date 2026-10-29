@@ -7,8 +7,13 @@ import '../features/auth/data/auth_repository.dart';
 import '../features/auth/ui/login_screen.dart';
 import '../features/auth/ui/otp_screen.dart';
 import '../features/home/ui/home_screen.dart';
+import '../core/models/quota_package.dart';
+import '../features/packages/ui/checkout_screen.dart';
 import '../features/packages/ui/packages_screen.dart';
 import '../features/packages/ui/topup_screen.dart';
+import '../features/transactions/ui/history_screen.dart';
+import '../features/transactions/ui/payment_screen.dart';
+import '../features/transactions/ui/transaction_detail_screen.dart';
 import 'shell.dart';
 import 'widgets.dart';
 
@@ -43,11 +48,25 @@ final routerProvider = Provider<GoRouter>((ref) {
           _tab('/packages', const PackagesScreen()),
           _tab('/usage', const ComingSoonScreen(title: 'Analisis')),
           _tab('/rewards', const ComingSoonScreen(title: 'Reward')),
-          _tab('/history', const ComingSoonScreen(title: 'Riwayat')),
+          _tab('/history', const HistoryScreen()),
         ],
       ),
       // Di luar shell: tampil penuh tanpa NavigationBar, dengan tombol kembali.
       GoRoute(path: '/topup', builder: (context, state) => const TopupScreen()),
+      GoRoute(
+        path: '/packages/:id/checkout',
+        // Data paket dibawa dari katalog; saat halaman web di-refresh, kembali ke katalog.
+        redirect: (context, state) => state.extra is QuotaPackage ? null : '/packages',
+        builder: (context, state) => CheckoutScreen(package: state.extra! as QuotaPackage),
+      ),
+      GoRoute(
+        path: '/payment/:id',
+        builder: (context, state) => PaymentScreen(transactionId: int.parse(state.pathParameters['id']!)),
+      ),
+      GoRoute(
+        path: '/history/:id',
+        builder: (context, state) => TransactionDetailScreen(transactionId: int.parse(state.pathParameters['id']!)),
+      ),
     ],
   );
 });

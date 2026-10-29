@@ -142,7 +142,7 @@ class _PulsaCard extends StatelessWidget {
             Text(formatRupiah(subscriber.pulsaBalance), style: displayNumber),
             const SizedBox(height: 4),
             if (subscriber.inGrace) ...[
-              _Chip(label: 'Masa tenggang s.d. ${formatDate(subscriber.graceUntil!)}', color: AppColors.warning),
+              StatusChip(label: 'Masa tenggang s.d. ${formatDate(subscriber.graceUntil!)}', color: AppColors.warning),
               const SizedBox(height: 4),
               Text('Isi ulang agar nomor tetap aktif. Selama masa tenggang kamu tidak bisa membeli paket.', style: muted),
             ] else
@@ -176,7 +176,7 @@ class _SubscriptionCard extends StatelessWidget {
             Text(s.name, style: theme.textTheme.titleLarge),
             const SizedBox(height: 8),
             if (s.isExhausted)
-              const _Chip(label: 'Kuota habis', color: AppColors.danger)
+              const StatusChip(label: 'Kuota habis', color: AppColors.danger)
             else ...[
               _QuotaRow(label: hasApp ? 'Utama' : null, remaining: s.mainRemaining, total: s.mainTotal),
               if (hasApp) ...[
@@ -260,25 +260,6 @@ class _NoQuotaCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _Chip extends StatelessWidget {
-  const _Chip({required this.label, required this.color});
-
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        border: Border.all(color: color),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(label, style: Theme.of(context).textTheme.labelLarge?.copyWith(color: color)),
     );
   }
 }

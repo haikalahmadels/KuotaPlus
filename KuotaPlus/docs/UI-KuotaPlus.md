@@ -203,13 +203,14 @@ NavigationBar 5 tab: Beranda, Paket, Analisis, Reward, Riwayat. Tab yang belum d
 │ │ Bulanan 15 GB            │ │
 │ │ 5,3 GB      dari 15 GB   │ │  ← sisa besar, total kecil
 │ │ ▓▓▓▓▓▓░░░░░░░░░░░░       │ │  ← bar sisa
-│ │ Berakhir 16 Nov 2026     │ │
+│ │ Berakhir 16 Nov 2026,    │ │
+│ │ 07.00                    │ │  ← tanggal + jam WIB (paket berakhir pada jam tertentu)
 │ └──────────────────────────┘ │
 │ ┌──────────────────────────┐ │
 │ │ Video 30 Hari            │ │
 │ │ Utama   8 GB dari 12 GB  │ │
 │ │ Video  15 GB dari 16 GB  │ │  ← kuota aplikasi terpisah (FR-2.1)
-│ │ Berakhir 3 Nov 2026      │ │
+│ │ Berakhir 3 Nov 2026, 07.00│ │
 │ └──────────────────────────┘ │
 └──────────────────────────────┘
 ```
@@ -265,3 +266,88 @@ Kartu prediksi, jatah harian, rekomendasi, dan poin ditambahkan di M5–M6.
 │ └────────────────────────┘   │
 └──────────────────────────────┘
 ```
+
+### S06 Checkout paket (M3, tukar poin di M6)
+
+```
+┌──────────────────────────────┐
+│ ←  Checkout                  │
+│ ┌──────────────────────────┐ │
+│ │ Video 30 Hari            │ │
+│ │ 12 GB utama · 30 hari    │ │
+│ │ + 16 GB Video            │ │
+│ │ Paket aktif setelah      │ │
+│ │ dibayar ...              │ │
+│ └──────────────────────────┘ │
+│ Metode pembayaran            │
+│ (•) Pulsa                    │  ← isi ulang (S07) tidak menampilkan Pulsa
+│ ( ) E-Wallet                 │
+│ ( ) Virtual Account          │
+│ ( ) QRIS                     │
+│ ──────────────────────────── │
+│ Total bayar        Rp65.000  │
+│ Pulsa tidak cukup. Kurang    │  ← error (danger)
+│ Rp52.500.  [Isi ulang pulsa] │     tombol hanya untuk INSUFFICIENT_BALANCE
+│ ┌────────────────────────┐   │
+│ │          Bayar         │   │
+│ └────────────────────────┘   │
+└──────────────────────────────┘
+```
+
+| State | Tampilan |
+| --- | --- |
+| Memuat | Tombol berisi spinner, pilihan metode dikunci |
+| Berhasil | Layar diganti S08 |
+| Error bisnis | Pesan server di atas tombol (`INSUFFICIENT_BALANCE`, `SUBSCRIBER_IN_GRACE`, `PACKAGE_INACTIVE`) |
+| Error jaringan | Tombol menjadi "Coba lagi" dengan Idempotency-Key yang sama, jadi tidak ada transaksi ganda |
+| Offline sebelum bayar | Tombol nonaktif + keterangan (TECH: `serverReachableProvider`) |
+
+### S08 Pembayaran (M3)
+
+```
+┌──────────────────────────────┐
+│ ←  Pembayaran                │
+│ ┌──────────────────────────┐ │
+│ │ Bulanan 15 GB  (Menunggu)│ │  ← chip status
+│ │ Rp55.000                 │ │
+│ │ QRIS · KP-20261029-KRS4V2│ │
+│ └──────────────────────────┘ │
+│ Bayar dalam 14:32            │  ← warning, hitung mundur ke expires_at
+│ Batas 29 Okt 2026, 17.05     │
+│        ┌────────┐            │
+│        │ ▓▓ ▓▓▓ │            │  ← QR (QRIS) / nomor VA + tombol salin (VA)
+│        └────────┘            │
+│ ┌────────────────────────┐   │
+│ │ Buka simulator pembayaran  │  ← Custom Tabs (Android) / tab baru (web)
+│ └────────────────────────┘   │
+│ Status diperbarui otomatis.  │
+└──────────────────────────────┘
+```
+
+| State | Tampilan |
+| --- | --- |
+| `pending` | Instruksi bayar; polling `GET /transactions/{id}` tiap 3 detik + saat aplikasi kembali ke foreground |
+| `paid` | Ikon centang (success), "Paket sudah aktif" / "Pulsa dan masa aktif sudah bertambah", tombol Ke Beranda dan Lihat riwayat |
+| `failed` | Ikon silang (danger), "Pembayaran ditolak" |
+| `expired` | Ikon jam (muted), "Waktu pembayaran habis" |
+| Error jaringan saat polling | Data terakhir tetap tampil, polling berlanjut |
+
+### S09 Riwayat (M3, tab Berbagi di M8)
+
+```
+┌──────────────────────────────┐
+│ Riwayat                      │
+│ [ Pembelian ][  Berbagi  ]   │
+│ Video 30 Hari       Rp65.000 │
+│ 29 Okt, 16.50 · QRIS (Menunggu)
+│ ──────────────────────────── │
+│ Isi ulang Rp25.000  Rp25.000 │
+│ 29 Okt, 16.40 · VA  (Berhasil)
+│ ...                          │
+│ [        Muat lagi        ]  │  ← jika masih ada halaman berikutnya
+└──────────────────────────────┘
+```
+
+### S10 Detail transaksi (M3)
+
+Daftar label–nilai: Item, Harga, Diskon poin (jika ada), Total bayar, Metode, Dibuat, Dibayar, Bayar sebelum (pending), Referensi (`external_ref`, bisa dipilih untuk disalin). Transaksi `pending` punya tombol "Lanjutkan bayar" ke S08 (FR-6.2).

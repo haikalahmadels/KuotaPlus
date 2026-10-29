@@ -4,10 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/theme.dart';
 import '../../../app/widgets.dart';
 import '../../../core/format.dart';
+import '../../transactions/providers.dart';
+import '../../transactions/ui/payment_form.dart';
 import '../data/catalog_repository.dart';
 import '../providers.dart';
 
-/// S07 (docs/UI-KuotaPlus.md). Pembayaran ditambahkan di M3.
+/// S07 (docs/UI-KuotaPlus.md).
 class TopupScreen extends ConsumerStatefulWidget {
   const TopupScreen({super.key});
 
@@ -60,13 +62,17 @@ class _TopupScreenState extends ConsumerState<TopupScreen> {
           ],
         ),
         const SizedBox(height: 24),
-        FilledButton(
-          onPressed: _selected == null
-              ? null
-              : () => ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(const SnackBar(content: Text('Pembayaran segera tersedia.'))),
-          child: const Text('Lanjut bayar'),
+        PaymentForm(
+          // FR-4.2: isi ulang tidak bisa dibayar dengan pulsa.
+          methods: const ['ewallet', 'va', 'qris'],
+          total: _selected,
+          requestId: _selected,
+          onSubmit: (method, key) => ref.read(transactionRepositoryProvider).create(
+                type: 'topup',
+                topupAmount: _selected,
+                paymentMethod: method,
+                idempotencyKey: key,
+              ),
         ),
       ],
     );
