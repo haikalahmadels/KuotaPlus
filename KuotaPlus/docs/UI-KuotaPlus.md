@@ -176,3 +176,92 @@ Diisi per milestone. Format: sketsa ASCII + daftar state (memuat, berhasil, koso
 | Berhasil | Token disimpan, pindah ke route asal (`from`) atau `/home` |
 
 Catatan: sampai M2, `/home` adalah layar sementara berisi tombol Keluar.
+
+### Shell navigasi (M2)
+
+NavigationBar 5 tab: Beranda, Paket, Analisis, Reward, Riwayat. Tab yang belum dibuat menampilkan empty state "Fitur ini sedang disiapkan" sampai milestone-nya (Analisis M4, Reward M6, Riwayat M3).
+
+### S04 Beranda (M2)
+
+```
+┌──────────────────────────────┐
+│ Beranda                [⋮]   │  ← menu: Keluar
+│ ┌──────────────────────────┐ │
+│ │ ⚠ Tidak bisa terhubung   │ │  ← banner (danger), hanya saat menampilkan cache
+│ │   ke server              │ │
+│ └──────────────────────────┘ │
+│ Diperbarui 29 Okt, 14.05     │  ← caption
+│ ┌──────────────────────────┐ │
+│ │ Pulsa                    │ │
+│ │ Rp12.500                 │ │  ← display
+│ │ Aktif s.d. 23 Nov 2026   │ │
+│ │ 25 hari lagi             │ │
+│ │ [Isi ulang]              │ │
+│ └──────────────────────────┘ │
+│ Kuota aktif                  │
+│ ┌──────────────────────────┐ │
+│ │ Bulanan 15 GB            │ │
+│ │ 5,3 GB      dari 15 GB   │ │  ← sisa besar, total kecil
+│ │ ▓▓▓▓▓▓░░░░░░░░░░░░       │ │  ← bar sisa
+│ │ Berakhir 16 Nov 2026     │ │
+│ └──────────────────────────┘ │
+│ ┌──────────────────────────┐ │
+│ │ Video 30 Hari            │ │
+│ │ Utama   8 GB dari 12 GB  │ │
+│ │ Video  15 GB dari 16 GB  │ │  ← kuota aplikasi terpisah (FR-2.1)
+│ │ Berakhir 3 Nov 2026      │ │
+│ └──────────────────────────┘ │
+└──────────────────────────────┘
+```
+
+| State | Tampilan |
+| --- | --- |
+| Memuat pertama kali | Spinner di tengah |
+| Berhasil | Seperti sketsa; pull-to-refresh memuat ulang |
+| Tanpa paket | Kartu "Kamu tidak punya kuota aktif" + tombol "Lihat paket" (FR-2.6) |
+| Paket `exhausted` | Angka sisa diganti chip "Kuota habis" (danger) |
+| Kartu masa tenggang | Chip "Masa tenggang s.d. [tanggal]" (warning) + kalimat "Isi ulang agar nomor tetap aktif" |
+| Offline dengan cache | Banner + data cache + label "Diperbarui" (FR-2.5) |
+| Offline tanpa cache / error | Pesan error + tombol "Coba lagi" |
+
+Kartu prediksi, jatah harian, rekomendasi, dan poin ditambahkan di M5–M6.
+
+### S05 Katalog paket (M2)
+
+```
+┌──────────────────────────────┐
+│ Paket                        │
+│ [Harian][Mingguan][Bulanan][Aplikasi] ← chip filter, satu terpilih
+│ ┌──────────────────────────┐ │
+│ │ Video 30 Hari    Rp65.000│ │
+│ │ 12 GB utama · 30 hari    │ │
+│ │ + 16 GB Video            │ │
+│ │ YouTube, TikTok, Netflix…│ │  ← app_examples
+│ │                   [Beli] │ │
+│ └──────────────────────────┘ │
+└──────────────────────────────┘
+```
+
+| State | Tampilan |
+| --- | --- |
+| Memuat | Spinner |
+| Grup kosong | "Belum ada paket di kategori ini" |
+| Error | Pesan + "Coba lagi" |
+| Tombol Beli | Membuka checkout (M3). Di M2 menampilkan snackbar "Pembelian segera tersedia" |
+
+### S07 Isi ulang (M2 tampilan, M3 pembayaran)
+
+```
+┌──────────────────────────────┐
+│ ←  Isi ulang                 │
+│ Pilih nominal                │
+│ ┌────────────┐┌────────────┐ │
+│ │ Rp5.000    ││ Rp10.000   │ │
+│ │ +7 hari    ││ +15 hari   │ │  ← tambahan masa aktif (FR-4.3)
+│ └────────────┘└────────────┘ │
+│ ...                          │
+│ ┌────────────────────────┐   │
+│ │       Lanjut bayar     │   │  ← aktif setelah memilih (M3)
+│ └────────────────────────┘   │
+└──────────────────────────────┘
+```

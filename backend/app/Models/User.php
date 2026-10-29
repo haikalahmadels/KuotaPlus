@@ -20,6 +20,12 @@ class User extends Authenticatable
         ];
     }
 
+    /** Saldo poin = SUM(delta) ledger; hold sudah tercatat negatif (FR-11.5). */
+    public function pointBalance(): int
+    {
+        return (int) $this->pointLedger()->sum('delta');
+    }
+
     public function subscriber(): BelongsTo
     {
         return $this->belongsTo(Subscriber::class);

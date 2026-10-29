@@ -26,6 +26,10 @@ String formatMsisdn(String msisdn) {
 /// Waktu dari API selalu ditampilkan dalam WIB, apa pun zona waktu perangkat.
 DateTime toWib(DateTime time) => time.toUtc().add(const Duration(hours: 7));
 
+/// Tanggal tanpa jam dari API ("2026-11-23", hari WIB) → 00:00 WIB hari itu,
+/// supaya [formatDate] menampilkan hari yang sama di zona waktu perangkat mana pun.
+DateTime parseDate(String date) => DateTime.parse('${date}T00:00:00+07:00');
+
 /// "29 Okt 2026".
 String formatDate(DateTime time) => DateFormat('d MMM yyyy', 'id_ID').format(toWib(time));
 

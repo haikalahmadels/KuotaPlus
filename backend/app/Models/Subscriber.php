@@ -20,6 +20,14 @@ class Subscriber extends Model
         return preg_match('/^628\d{7,11}$/', $digits) ? $digits : null;
     }
 
+    /** Nomor orang lain selalu tersamar: "6281298765432" → "0812••••5432". */
+    public static function maskMsisdn(string $msisdn): string
+    {
+        $local = '0'.substr($msisdn, 2);
+
+        return substr($local, 0, 4).'••••'.substr($local, -4);
+    }
+
     protected function casts(): array
     {
         return [

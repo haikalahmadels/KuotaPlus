@@ -17,6 +17,8 @@ Future<void> main() async {
   final signedIn = await tokens.read() != null;
 
   runApp(ProviderScope(
+    // Tanpa retry otomatis: error langsung tampil dengan tombol "Coba lagi", dan cache offline beranda langsung dipakai.
+    retry: (retryCount, error) => null,
     overrides: [
       tokenStorageProvider.overrideWithValue(tokens),
       initialSignedInProvider.overrideWithValue(signedIn),

@@ -297,7 +297,7 @@ Satu panggilan untuk seluruh beranda. Client menyimpan respons terakhir sebagai 
   "data": {
     "server_time": "2026-10-29T14:05:00+07:00",
     "subscriber": { "…": "Subscriber" },
-    "subscriptions": [ { "…": "Subscription, hanya status active" } ],
+    "subscriptions": [ { "…": "Subscription, status active atau exhausted yang belum berakhir" } ],
     "forecast": { "…": "Forecast" },
     "daily_budget": {
       "budget_bytes": 412090368,
@@ -318,7 +318,7 @@ Satu panggilan untuk seluruh beranda. Client menyimpan respons terakhir sebagai 
 }
 ```
 
-- `subscriptions` kosong: client menampilkan "Kamu tidak punya kuota aktif" (FR-2.6). `forecast` dan `daily_budget` bernilai `null`.
+- `subscriptions`: paket yang belum berakhir, termasuk yang kuotanya habis (`exhausted`, ditampilkan "Kuota habis"), terurut dari yang paling cepat berakhir. Kosong: client menampilkan "Kamu tidak punya kuota aktif" (FR-2.6). `forecast` dan `daily_budget` bernilai `null`.
 - `recommendation_teaser`: `null` jika tidak ada rekomendasi atau `saving_30d` ≤ 0.
 - `usage.source`: `device` | `demo` | `null` (belum ada data). `last_synced_at` dipakai untuk banner "Data pemakaian berhenti diperbarui sejak [tanggal]".
 - `alerts`: alert hari ini yang belum pernah dikirim ke client ini. Server menandainya terkirim setelah respons ini.

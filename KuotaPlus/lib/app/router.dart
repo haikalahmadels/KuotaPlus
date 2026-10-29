@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -6,7 +6,11 @@ import '../core/session.dart';
 import '../features/auth/data/auth_repository.dart';
 import '../features/auth/ui/login_screen.dart';
 import '../features/auth/ui/otp_screen.dart';
-import 'home_placeholder_screen.dart';
+import '../features/home/ui/home_screen.dart';
+import '../features/packages/ui/packages_screen.dart';
+import '../features/packages/ui/topup_screen.dart';
+import 'shell.dart';
+import 'widgets.dart';
 
 /// Peta route lengkap ada di docs/UI-KuotaPlus.md. Route ditambahkan per milestone.
 final routerProvider = Provider<GoRouter>((ref) {
@@ -32,10 +36,25 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-      GoRoute(path: '/home', builder: (context, state) => const HomePlaceholderScreen()),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, shell) => AppShell(shell: shell),
+        branches: [
+          _tab('/home', const HomeScreen()),
+          _tab('/packages', const PackagesScreen()),
+          _tab('/usage', const ComingSoonScreen(title: 'Analisis')),
+          _tab('/rewards', const ComingSoonScreen(title: 'Reward')),
+          _tab('/history', const ComingSoonScreen(title: 'Riwayat')),
+        ],
+      ),
+      // Di luar shell: tampil penuh tanpa NavigationBar, dengan tombol kembali.
+      GoRoute(path: '/topup', builder: (context, state) => const TopupScreen()),
     ],
   );
 });
+
+StatefulShellBranch _tab(String path, Widget screen) => StatefulShellBranch(
+      routes: [GoRoute(path: path, builder: (context, state) => screen)],
+    );
 
 /// Belum login → `/login?from=<asal>`. Sudah login tapi di /login → kembali ke asal atau /home.
 @visibleForTesting
