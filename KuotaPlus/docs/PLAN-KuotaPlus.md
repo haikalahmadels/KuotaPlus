@@ -28,12 +28,15 @@ Ukuran (S/M/L) adalah perkiraan relatif, bukan jadwal. PRD tidak menetapkan dead
 | M4 | Pemakaian per aplikasi | L | M2 | Data asli Android |
 | M5 | Prediksi dan rekomendasi | M | M4 | Akurasi prediksi, Kebenaran rekomendasi |
 | M6 | Reward dan poin | L | M3, M5 | Integritas poin, Skenario demo end-to-end |
+| M6.5 | Sistem desain dan identitas visual | M | M6 | — |
 | M7 | Peringatan dan notifikasi | S | M5 | — |
 | M8 | Berbagi kuota | M | M1, M6 | Aturan berbagi kuota |
 | M9 | Panel admin | M | M3–M8 | Panel admin |
 | M10 | Verifikasi dan demo | S | semua | Performa lokal, semua kriteria dicek ulang |
 
 M3 dan M4 sama-sama hanya butuh M2, jadi urutannya boleh ditukar.
+
+M6.5 disisipkan setelah M6 supaya layar baru di M7–M9 langsung dibangun dengan gaya baru. Nomor milestone lain tidak digeser karena sudah dirujuk di kode dan dokumen.
 
 ## M0 Fondasi
 
@@ -164,6 +167,28 @@ Poin belum dipakai di milestone ini (`points_used` selalu 0). Hold dan release p
 - `migrate:fresh --seed` menghasilkan nilai di tabel "Hasil yang diharapkan" (SEED). Angka ≈ di dokumen SEED diganti dengan angka sebenarnya.
 - DoD **Skenario demo end-to-end** berhasil di Android **dan** Chrome: login Rina → beranda → analisis → prediksi → rekomendasi → beli Video 30 Hari dengan 500 poin via QRIS → kuota bertambah. Rekam layar.
 
+## M6.5 Sistem desain dan identitas visual
+
+Tidak ada perubahan backend. Fokusnya fondasi visual yang dipakai semua layar; poles per layar ditunda ke M10.
+
+**Riset dan dokumen**
+
+- Riset aplikasi provider seluler Indonesia (UI, susunan menu, tipografi, sisi bisnis) di `docs/RISET-UI-Provider.md`.
+- Perbarui `docs/UI-KuotaPlus.md`: arah visual, palet baru (tetap WCAG AA dan "warna punya arti"), tipografi, radius, elevasi, ikon, aturan motion (durasi, kurva, micro-interaction standar, dukungan "kurangi gerakan"), dan panduan maskot (karakter, ekspresi, kapan muncul).
+
+**Flutter**
+
+- Token baru di `theme.dart`, komponen bersama di `widgets.dart` (tombol dengan umpan balik tekan, kartu, chip status, skeleton memuat, empty/error state bermaskot).
+- Aset maskot (Lottie atau Rive) dengan ekspresi minimal: senang, khawatir, sedih, merayakan.
+- Restyle layar inti: login/OTP, beranda, katalog, checkout, layar sukses/gagal bayar.
+
+**Selesai jika**
+
+- Layar inti memakai token dan komponen baru, tanpa warna atau ukuran yang di-hardcode di layar.
+- Semua pasangan warna teks lolos cek kontras AA.
+- Animasi mati saat "kurangi gerakan" aktif di perangkat.
+- Test Flutter yang ada tetap lolos (disesuaikan jika teks atau struktur widget berubah).
+
 ## M7 Peringatan dan notifikasi (FR-13)
 
 **Backend:** `AlertService` (5 pemicu, unik per jenis per hari, `delivered_at`), dipanggil di `GET /home` dan `POST /usage/sync`.
@@ -199,6 +224,7 @@ Poin belum dipakai di milestone ini (`points_used` selalu 0). Hold dan release p
 ## M10 Verifikasi dan demo
 
 - DoD **Performa lokal**: ukur p95 latensi API dengan Telescope saat menjalankan skenario demo (≤ 500 ms), dan waktu tampil beranda (≤ 2 detik).
+- Poles visual: restyle layar yang belum tersentuh di M6.5, transisi antar layar, dan momen maskot (bayar berhasil, kuota hampir habis, streak hemat, empty state).
 - Jalankan ulang seluruh test backend (`php artisan test` dan `--group=concurrency`) dan test Flutter.
 - Centang ulang setiap baris Definition of done dan kumpulkan buktinya (rekaman, screenshot, output test) di `docs/bukti/`.
 - `README.md` di root: cara setup dari nol, cara menjalankan, akun demo, dan keterbatasan (dual SIM, HTTP lokal, SQ-1).

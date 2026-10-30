@@ -51,3 +51,7 @@ app.*.map.json
 .claude/
 .agents/
 skills-lock.json
+
+# Screenshot aplikasi provider untuk riset: materi berhak cipta, simpan lokal saja
+docs/riset/research_notes/**/_screens/*
+!docs/riset/research_notes/**/_screens/sources.txt
