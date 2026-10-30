@@ -123,7 +123,7 @@ Kuo **dilarang** muncul di form checkout, daftar metode bayar, OTP, pembayaran g
                │              │              │              │              │
    /recommendations   /packages/:id/checkout  /usage/apps/:id  /rewards/ledger  /history/:id
    /topup             /payment/:id           (sheet Mode Demo)
-   /share → /share/amount → /share/otp → /share/done
+   /share (nomor → jumlah → OTP → selesai, satu layar berlangkah)
 ```
 
 - Belum login atau menerima 401 → `/login?from=<route asal>`, lalu kembali ke route asal setelah login.
@@ -152,10 +152,10 @@ Kuo **dilarang** muncul di form checkout, daftar metode bayar, OTP, pembayaran g
 | S14 | Rekomendasi paket | `/recommendations` | M5 | `GET /recommendations` |
 | S15 | Reward | `/rewards` | M6 | `GET /points` |
 | S16 | Riwayat poin | `/rewards/ledger` | M6 | `GET /points/ledger` |
-| S17 | Bagi kuota: nomor penerima | `/share` | M8 | `GET /quota-transfers/quote` |
-| S18 | Bagi kuota: jumlah + ringkasan | `/share/amount` | M8 | (hasil quote) |
-| S19 | Bagi kuota: OTP | `/share/otp` | M8 | `POST /quota-transfers/otp`, `POST /quota-transfers` |
-| S20 | Bagi kuota: selesai | `/share/done` | M8 | — |
+| S17 | Bagi kuota: nomor penerima | `/share` (langkah 1) | M8 | `GET /quota-transfers/quote` |
+| S18 | Bagi kuota: jumlah + ringkasan | `/share` (langkah 2) | M8 | (hasil quote) |
+| S19 | Bagi kuota: OTP | `/share` (langkah 3) | M8 | `POST /quota-transfers/otp`, `POST /quota-transfers` |
+| S20 | Bagi kuota: selesai | `/share` (selesai) | M8 | — |
 
 ## Wireframe
 
@@ -597,3 +597,42 @@ Beranda (S04) juga menampilkan baris "X poin · N hari hemat berturut-turut" yan
 ### S16 Riwayat poin (M6)
 
 Daftar terbaru di atas: keterangan dari server (misalnya "Hari hemat 15 Okt", "Diskon Video 30 Hari", "Poin dikembalikan: pembayaran gagal"), waktu, dan delta (+ hijau, − teks biasa). Tombol "Muat lagi" untuk halaman berikutnya.
+
+### S17–S20 Bagi kuota (M8)
+
+Satu route `/share` dengan langkah internal, supaya nomor, pilihan, OTP, dan Idempotency-Key bertahan selama alur. Penanda 3 langkah di bawah AppBar; tombol kembali mundur satu langkah. Langkah berganti dengan geser + pudar (`Motion.enter`). Dibuka dari menu cepat beranda "Bagi kuota" dan dari empty state tab Berbagi.
+
+```
+S17 Nomor                     S18 Jumlah + ringkasan          S19 OTP                      S20 Selesai
+┌────────────────────────┐   ┌────────────────────────────┐   ┌────────────────────────┐   ┌────────────────────────┐
+│ Bagi kuota   ▬▬ ── ──  │   │ Bagi kuota   ▬▬ ▬▬ ──      │   │ Bagi kuota   ▬▬ ▬▬ ▬▬  │   │        (Kuo merayakan) │
+│ Ke nomor siapa?        │   │ (o) Penerima 0881••••0007  │   │ Konfirmasi dengan OTP  │   │ Kuota terkirim!        │
+│ [👤 Nomor penerima   ] │   │ ┌ Sisa jatah berbagi 30 h ┐│   │ (MODE DEMO: 123456 Isi)│   │ 1 GB untuk 0881••0007, │
+│ [       Lanjut       ] │   │ │ 1,5 GB dari 2 GB  ▓▓▓░  ││   │ [  _ _ _ _ _ _  ]      │   │ berlaku s.d. ...       │
+│ ┌ aturan singkat ────┐ │   │ └ Poinmu 340 · pulih ... ┘│   │ Kirim ulang dalam 0:42 │   │ Poin terpakai  200     │
+│ │ kuota utama saja    │ │   │ Pilih jumlah               │   │ [   Bagikan 1 GB    ]  │   │ Sisa kuota utama 9 GB  │
+│ │ memakai poin hemat  │ │   │ [0,5 GB][1 GB ✓]           │   └────────────────────────┘   │ [      Selesai      ]  │
+│ │ tidak bisa ditarik  │ │   │ [1,5 GB][2 GB nonaktif:    │                                │ [Lihat riwayat berbagi]│
+│ └─────────────────────┘ │   │          alasan]           │                                └────────────────────────┘
+└────────────────────────┘   │ ┌ Ringkasan ─────────────┐ │
+                              │ │ penerima, jumlah, poin, │ │
+                              │ │ berlaku s.d., sisa kuota│ │
+                              │ │ ⓘ tidak bisa dibatalkan │ │
+                              │ └────────────────────────┘ │
+                              │ [    Kirim kode OTP     ]  │
+                              └────────────────────────────┘
+```
+
+| Kondisi | Tampilan |
+| --- | --- |
+| Nomor ditolak (`RECIPIENT_*`) | Pesan server di bawah field, tetap di S17 |
+| Opsi `allowed = false` | Tile abu-abu, tidak bisa diketuk, alasan server di bawah poin |
+| `SHARE_NOT_ALLOWED` saat minta OTP atau eksekusi (aturan berubah karena sync/transfer lain) | Snackbar alasan, quote dimuat ulang, kembali ke S18 tanpa pilihan |
+| `OTP_INVALID` / `OTP_EXPIRED` | Pesan di bawah field kode, field dikosongkan |
+| `OTP_LOCKED` | Snackbar, kembali ke S18 |
+| Jaringan putus saat eksekusi | Pesan di bawah field; coba lagi memakai Idempotency-Key yang sama (server mengenali replay) |
+| Selesai | Kuo `celebrate` sekali + getar sedang; beranda, poin, dan riwayat berbagi dimuat ulang |
+
+Jumlah berbagi selalu ditulis dalam GB (`formatGb`): "500 MB" di FR-14.3 = 0,5 GB (536870912 byte), jadi dua langkah tepat 1 GB.
+
+Tab **Berbagi** di S09 (`/history?tab=berbagi` membuka tab ini): daftar transfer sebagai pengirim, "1 GB ke 0881••••0007", tanggal, poin, dan masa berlaku di penerima, chip Berhasil. Kosong: Kuo `rest` + "Belum pernah berbagi kuota" + tombol "Bagi kuota".

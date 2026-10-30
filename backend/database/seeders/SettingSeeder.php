@@ -28,9 +28,10 @@ class SettingSeeder extends Seeder
             'points.min_net_amount' => [1000, 0, 10000],
             'points.validity_days' => [90, 7, 365],
             'card.grace_days' => [15, 0, 60],
-            'share.limit_bytes_30d' => [2 * self::GB, 500 * self::MB, 10 * self::GB],
+            // "500 MB" di FR-14 = setengah GB (536870912), supaya 2 langkah tepat 1 GB (docs/SEED-KuotaPlus.md).
+            'share.limit_bytes_30d' => [2 * self::GB, self::GB / 2, 10 * self::GB],
             'share.min_remaining_bytes' => [2 * self::GB, 0, 10 * self::GB],
-            'share.step_bytes' => [500 * self::MB, 100 * self::MB, 2 * self::GB],
+            'share.step_bytes' => [self::GB / 2, 100 * self::MB, 2 * self::GB],
             'share.points_per_step' => [100, 0, 1000],
             'share.validity_days' => [7, 1, 30],
             'notify.quota_low_percent' => [20, 5, 50],

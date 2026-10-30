@@ -94,7 +94,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                       style: theme.textTheme.bodyLarge),
                   if (demoOtp != null) ...[
                     const SizedBox(height: 16),
-                    _DemoBanner(code: demoOtp, onFill: _loading ? null : () {
+                    DemoOtpBanner(code: demoOtp, onFill: _loading ? null : () {
                       _code.text = demoOtp;
                       _verify();
                     }),
@@ -145,9 +145,9 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
   }
 }
 
-/// FR-1.3: OTP dummy tidak dikirim lewat SMS, jadi ditampilkan di sini.
-class _DemoBanner extends StatelessWidget {
-  const _DemoBanner({required this.code, required this.onFill});
+/// FR-1.3: OTP dummy tidak dikirim lewat SMS, jadi ditampilkan di sini. Dipakai juga di OTP berbagi kuota.
+class DemoOtpBanner extends StatelessWidget {
+  const DemoOtpBanner({super.key, required this.code, required this.onFill});
 
   final String code;
   final VoidCallback? onFill;

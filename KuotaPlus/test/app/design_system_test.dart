@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kuota_plus/app/mascot.dart';
 import 'package:kuota_plus/app/theme.dart';
+import 'package:kuota_plus/app/widgets.dart';
 
 Future<void> _loadFont() async {
   final loader = FontLoader(fontFamily);
@@ -55,5 +56,16 @@ void main() {
 
     expect(tester.binding.hasScheduledFrame, isFalse);
     expect(find.descendant(of: find.byType(Mascot), matching: find.byType(ExcludeSemantics)), findsOneWidget);
+  });
+
+  testWidgets('SmoothSize berubah ukuran tanpa error saat "kurangi animasi" aktif', (tester) async {
+    // Regresi: AnimatedSize berdurasi nol melempar "RenderAnimatedSize was mutated in its own performLayout".
+    for (final reduce in [true, false]) {
+      Widget box(double height) => _app(SmoothSize(child: SizedBox(width: 100, height: height)), reduceMotion: reduce);
+      await tester.pumpWidget(box(10));
+      await tester.pumpWidget(box(200));
+      await tester.pumpAndSettle();
+      expect(tester.getSize(find.byType(SmoothSize)).height, 200);
+    }
   });
 }

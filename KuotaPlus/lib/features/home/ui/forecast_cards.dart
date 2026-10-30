@@ -90,10 +90,7 @@ class _ForecastCardState extends State<ForecastCard> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Semantics(expanded: f.isRisk ? _open : null, child: header),
-                AnimatedSize(
-                  duration: Motion.of(context, Motion.enter),
-                  curve: Motion.enterCurve,
-                  alignment: Alignment.topCenter,
+                SmoothSize(
                   child: _open && f.isRisk
                       ? _Details(f, now: widget.now ?? DateTime.now())
                       : const SizedBox(width: double.infinity),

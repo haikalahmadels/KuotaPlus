@@ -725,6 +725,8 @@ Memvalidasi penerima dan menghitung semua pilihan jumlah sekaligus. Hasilnya dip
 ```
 
 - `recovers_at`: tanggal transfer tertua dalam jendela 30 hari keluar dari hitungan. `null` jika belum pernah berbagi.
+- Langkah jumlah = `share.step_bytes` = 536870912 ("500 MB" di PRD = 0,5 GB), sehingga pilihannya 0,5 / 1 / 1,5 / 2 GB. Teks `reason` menulis jumlah dalam GB.
+- Hanya paket milik sendiri (`source` bukan `shared`) yang dihitung di `sender_main_remaining_bytes` dan dipotong (FR-14.1).
 - Opsi yang `allowed = false` tetap dikirim dengan `reason`, supaya client bisa menampilkannya nonaktif (FR-14.3).
 - `reason` yang mungkin: melebihi jatah berbagi, sisa kuota setelah berbagi < 2 GB, poin tidak cukup.
 

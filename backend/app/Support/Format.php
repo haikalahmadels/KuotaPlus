@@ -15,6 +15,12 @@ final class Format
         return $bytes < self::GB ? round($bytes / self::MB).' MB' : self::decimal($bytes / self::GB).' GB';
     }
 
+    /** Selalu dalam GB: 0,5 GB, 1,5 GB. Untuk jumlah berbagi kuota yang berkelipatan setengah GB (FR-14.3). */
+    public static function gb(int $bytes): string
+    {
+        return self::decimal($bytes / self::GB).' GB';
+    }
+
     /** 52,1 / 40 (tanpa ,0). */
     public static function decimal(float $value): string
     {

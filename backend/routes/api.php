@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\PointsController;
+use App\Http\Controllers\Api\QuotaTransferController;
 use App\Http\Controllers\Api\RecommendationController;
 use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\Api\UsageController;
@@ -40,4 +41,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('points', [PointsController::class, 'show']);
     Route::get('points/ledger', [PointsController::class, 'ledger']);
+
+    Route::get('quota-transfers/quote', [QuotaTransferController::class, 'quote']);
+    Route::post('quota-transfers/otp', [QuotaTransferController::class, 'otp'])->middleware('throttle:otp');
+    Route::post('quota-transfers', [QuotaTransferController::class, 'store']);
+    Route::get('quota-transfers', [QuotaTransferController::class, 'index']);
 });

@@ -11,7 +11,16 @@
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
         </testsuite>
+        <!-- Butuh server Laragon yang berjalan; jalankan dengan opsi group concurrency (docs/TECH). -->
+        <testsuite name="Concurrency">
+            <directory>tests/Concurrency</directory>
+        </testsuite>
     </testsuites>
+    <groups>
+        <exclude>
+            <group>concurrency</group>
+        </exclude>
+    </groups>
     <source>
         <include>
             <directory>app</directory>

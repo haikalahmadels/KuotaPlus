@@ -16,13 +16,7 @@ use Illuminate\Support\Carbon;
  */
 class AlertService
 {
-    /** FR-13.1(a): sisa kuota utama ≤ 20%. */
-    public const QUOTA_LOW_RATIO = 0.2;
-
-    /** FR-13.1(d): masa aktif kartu ≤ 3 hari. */
-    public const CARD_EXPIRING_DAYS = 3;
-
-    public function __construct(private ForecastService $forecasts) {}
+    public function __construct(private ForecastService $forecasts, private SettingService $settings) {}
 
     /**
      * Evaluasi pemicu, lalu kembalikan alert hari ini yang belum pernah dikirim dan tandai terkirim.
@@ -61,11 +55,11 @@ class AlertService
         $subscriber = $user->subscriber;
         $subscriptions = $subscriber->subscriptions()->current()->with('package')->get();
 
-        // (a) Sisa kuota utama semua paket ≤ 20%.
+        // (a) Sisa kuota utama semua paket ≤ notify.quota_low_percent (20%).
         $mainTotal = $subscriptions->sum('main_total');
         $mainLeft = $subscriptions->sum(fn (Subscription $s) => max(0, $s->main_total - $s->main_used));
-        if ($mainTotal > 0 && $mainLeft / $mainTotal <= self::QUOTA_LOW_RATIO) {
-            $this->record($user, 'quota_low', [
+        if ($mainTotal > 0 && $mainLeft / $mainTotal * 100 <= $this->settings->int('notify.quota_low_percent')) {
+            $this->notify($user, 'quota_low', [
                 'title' => 'Kuota utama tinggal sedikit',
                 'body' => 'Sisa kuota utamamu '.Format::bytes($mainLeft).' ('.round($mainLeft / $mainTotal * 100).'%). Lihat paket yang pas sebelum habis.',
                 'target' => '/recommendations',
@@ -76,7 +70,7 @@ class AlertService
         if ($subscriptions->isNotEmpty()) {
             $forecast = $this->forecasts->latest($user);
             if ($forecast?->status === 'risk' && ! $this->riskAlreadyNotified($user)) {
-                $this->record($user, 'forecast_risk', [
+                $this->notify($user, 'forecast_risk', [
                     'title' => 'Kuota diprediksi habis lebih cepat',
                     // Selisih hari dihitung sama dengan days_early di ForecastResource.
                     'body' => 'Kuotamu diperkirakan habis '.$this->day($forecast->predicted_empty_at).', '
@@ -87,20 +81,22 @@ class AlertService
             }
         }
 
-        // (c) Paket berakhir ≤ 1 hari lagi (yang paling cepat).
-        $expiring = $subscriptions->first(fn (Subscription $s) => $s->expires_at->lte(now()->addDay()));
+        // (c) Paket berakhir ≤ notify.package_expiring_days (1 hari) lagi, yang paling cepat.
+        $expiringBy = now()->addDays($this->settings->int('notify.package_expiring_days'));
+        $expiring = $subscriptions->first(fn (Subscription $s) => $s->expires_at->lte($expiringBy));
         if ($expiring) {
             $name = $expiring->package?->name ?? 'Kuota kiriman';
-            $this->record($user, 'package_expiring', [
+            $this->notify($user, 'package_expiring', [
                 'title' => 'Paket segera berakhir',
                 'body' => $name.' berakhir '.$this->day($expiring->expires_at).' pukul '.$expiring->expires_at->format('H.i').'. Sisa kuotanya ikut berakhir.',
                 'target' => '/packages',
             ]);
         }
 
-        // (d) Masa aktif kartu ≤ 3 hari (nomor yang sudah masa tenggang tampil di beranda, bukan alert ini).
-        if ($subscriber->status === 'active' && $subscriber->active_until->lte(today()->addDays(self::CARD_EXPIRING_DAYS))) {
-            $this->record($user, 'card_expiring', [
+        // (d) Masa aktif kartu ≤ notify.card_expiring_days (3 hari). Nomor masa tenggang tampil di beranda, bukan alert ini.
+        $cardBy = today()->addDays($this->settings->int('notify.card_expiring_days'));
+        if ($subscriber->status === 'active' && $subscriber->active_until->lte($cardBy)) {
+            $this->notify($user, 'card_expiring', [
                 'title' => 'Masa aktif nomor segera habis',
                 'body' => 'Nomormu aktif sampai '.$this->day($subscriber->active_until).'. Isi ulang agar tidak masuk masa tenggang.',
                 'target' => '/topup',
@@ -116,7 +112,7 @@ class AlertService
             ->latest('updated_at')
             ->first();
         if ($transaction) {
-            $this->record($user, 'transaction_status', $this->transactionPayload($transaction));
+            $this->notify($user, 'transaction_status', $this->transactionPayload($transaction));
         }
     }
 
@@ -151,8 +147,11 @@ class AlertService
         return ['title' => $title, 'body' => $body, 'target' => '/history/'.$transaction->id];
     }
 
-    /** Catat alert jika jenis ini belum ada hari ini (unique index menangani request bersamaan). */
-    private function record(User $user, string $kind, array $payload): void
+    /**
+     * Catat alert jika jenis ini belum ada hari ini (unique index menangani request bersamaan).
+     * Publik untuk alert yang dipicu kejadian di luar evaluasi, mis. quota_received saat berbagi kuota.
+     */
+    public function notify(User $user, string $kind, array $payload): void
     {
         Notification::createOrFirst(
             ['user_id' => $user->id, 'kind' => $kind, 'notified_on' => today()->toDateString()],

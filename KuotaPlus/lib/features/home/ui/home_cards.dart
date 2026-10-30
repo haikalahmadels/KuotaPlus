@@ -419,10 +419,7 @@ class _DailyTankState extends State<DailyTank> {
             ),
           ),
         ),
-        AnimatedSize(
-          duration: Motion.of(context, Motion.enter),
-          curve: Motion.enterCurve,
-          alignment: Alignment.topCenter,
+        SmoothSize(
           child: _why
               ? Container(
                   margin: const EdgeInsets.only(top: 12),
@@ -487,14 +484,7 @@ class QuickMenu extends StatelessWidget {
     final items = [
       (icon: Icons.sell_outlined, label: 'Beli paket', onTap: () => context.go('/packages')),
       (icon: Icons.add_circle_outline_rounded, label: 'Isi ulang', onTap: () => context.push('/topup')),
-      (
-        icon: Icons.ios_share_rounded,
-        label: 'Bagi kuota',
-        // shortcut: Bagi kuota dibangun di M8; sampai itu tombol menjelaskan, bukan disembunyikan.
-        onTap: () => ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(const SnackBar(content: Text('Bagi kuota segera hadir.'))),
-      ),
+      (icon: Icons.ios_share_rounded, label: 'Bagi kuota', onTap: () => context.push('/share')),
       (icon: Icons.insights_outlined, label: 'Analisis', onTap: () => context.go('/usage')),
     ];
 

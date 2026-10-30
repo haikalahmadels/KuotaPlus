@@ -14,6 +14,7 @@ import '../features/packages/ui/topup_screen.dart';
 import '../features/recommendations/ui/recommendations_screen.dart';
 import '../features/rewards/ui/ledger_screen.dart';
 import '../features/rewards/ui/rewards_screen.dart';
+import '../features/share/ui/share_screen.dart';
 import '../features/transactions/ui/history_screen.dart';
 import '../features/transactions/ui/payment_screen.dart';
 import '../features/transactions/ui/transaction_detail_screen.dart';
@@ -83,6 +84,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/onboarding/usage-access', builder: (context, state) => const UsageAccessScreen()),
       GoRoute(path: '/recommendations', builder: (context, state) => const RecommendationsScreen()),
       GoRoute(path: '/rewards/ledger', builder: (context, state) => const LedgerScreen()),
+      GoRoute(path: '/share', builder: (context, state) => const ShareScreen()),
       GoRoute(
         path: '/history/:id',
         builder: (context, state) => TransactionDetailScreen(transactionId: int.parse(state.pathParameters['id']!)),

@@ -12,6 +12,9 @@ final _rupiah = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp', decimalDigi
 String formatBytes(int bytes) =>
     bytes < _gb ? '${(bytes / _mb).round()} MB' : '${_gbFormat.format(bytes / _gb)} GB';
 
+/// Selalu dalam GB: 536870912 → "0,5 GB". Untuk jumlah berbagi kuota (kelipatan setengah GB, FR-14.3).
+String formatGb(int bytes) => '${_gbFormat.format(bytes / _gb)} GB';
+
 /// 5000 → "Rp5.000".
 String formatRupiah(int amount) => _rupiah.format(amount);
 

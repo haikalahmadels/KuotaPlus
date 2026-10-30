@@ -7,8 +7,6 @@ use App\Models\App;
 use App\Models\DailyEvaluation;
 use App\Models\Package;
 use App\Models\PaymentCallback;
-use App\Models\QuotaTransfer;
-use App\Models\QuotaTransferSource;
 use App\Models\Subscriber;
 use App\Models\Subscription;
 use App\Models\Transaction;
@@ -17,6 +15,7 @@ use App\Models\User;
 use App\Services\ForecastService;
 use App\Services\PointService;
 use App\Services\QuotaService;
+use App\Services\QuotaTransferService;
 use App\Services\RewardService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
@@ -51,6 +50,7 @@ class DemoAccountSeeder extends Seeder
         private QuotaService $quota,
         private RewardService $rewards,
         private PointService $points,
+        private QuotaTransferService $transfers,
     ) {}
 
     public function run(): void
@@ -108,7 +108,7 @@ class DemoAccountSeeder extends Seeder
         match ($offset) {
             -21, -19, -16, -14 => $this->purchase($rina, 'HR1', $this->at($offset, 7), 'pulsa'),
             -12 => $this->purchase($rina, 'BL15', $this->at($offset, 7), 'qris'),
-            -10 => $this->shareQuota($budi, $andi, self::GB, 200, $this->at($offset, 12)),
+            -10 => $this->shareQuota($budi, $andi, self::GB, $this->at($offset, 12)),
             -6 => $this->purchase($dimas, 'MG10', $this->at($offset, 10), 'ewallet'),
             default => null,
         };
@@ -214,27 +214,11 @@ class DemoAccountSeeder extends Seeder
         return $transaction;
     }
 
-    /** Budi berbagi 1 GB ke Andi (FR-14.7–14.9). Logika lengkapnya dibangun di M8; di sini hanya hasil akhirnya. */
-    private function shareQuota(User $sender, Subscriber $recipient, int $bytes, int $pointsCost, Carbon $at): void
+    /** Budi berbagi 1 GB ke Andi (FR-14.7–14.9) lewat service yang sama dengan API, tanpa OTP. */
+    private function shareQuota(User $sender, Subscriber $recipient, int $bytes, Carbon $at): void
     {
         Carbon::setTestNow($at);
-        $source = Subscription::where('subscriber_id', $sender->subscriber_id)->current()->where('status', 'active')->first();
-        $source->increment('main_used', $bytes);
-
-        $received = Subscription::create([
-            'subscriber_id' => $recipient->id, 'source' => 'shared', 'main_total' => $bytes,
-            'started_at' => $at, 'expires_at' => min($at->copy()->addDays(7), $source->expires_at),
-        ]);
-        $transfer = QuotaTransfer::create([
-            'sender_user_id' => $sender->id, 'recipient_subscriber_id' => $recipient->id, 'bytes' => $bytes,
-            'points_spent' => $pointsCost, 'recipient_subscription_id' => $received->id, 'expires_at' => $received->expires_at,
-            'idempotency_key' => (string) Str::uuid(), 'request_hash' => hash('sha256', 'seed-share'),
-            'status' => 'completed', 'completed_at' => $at,
-        ]);
-        QuotaTransferSource::create(['quota_transfer_id' => $transfer->id, 'subscription_id' => $source->id, 'bytes' => $bytes]);
-
-        $this->points->spend($sender, $pointsCost, $transfer);
-        $this->forecasts->recompute($sender);
+        $this->transfers->transfer($sender, $recipient, $bytes, (string) Str::uuid());
     }
 
     /** Rina hemat selama libur semester D-88 s.d. D-61: 28 hari berturut-turut + 4 bonus streak. */

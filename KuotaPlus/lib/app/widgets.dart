@@ -307,3 +307,22 @@ class EnterAnimation extends StatelessWidget {
     );
   }
 }
+
+/// Tinggi yang berubah mulus saat isi dibuka/ditutup. Saat "kurangi animasi" aktif ukurannya langsung melompat:
+/// AnimatedSize berdurasi nol melempar assertion layout, jadi jangan memberi AnimatedSize durasi dari Motion.of.
+class SmoothSize extends StatelessWidget {
+  const SmoothSize({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (Motion.reduced(context)) return child;
+    return AnimatedSize(
+      duration: Motion.enter,
+      curve: Motion.enterCurve,
+      alignment: Alignment.topCenter,
+      child: child,
+    );
+  }
+}

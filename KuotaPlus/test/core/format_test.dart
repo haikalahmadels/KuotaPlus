@@ -21,6 +21,12 @@ void main() {
     expect(formatRupiah(135000), 'Rp135.000');
   });
 
+  test('jumlah berbagi selalu dalam GB', () {
+    expect(formatGb(536870912), '0,5 GB');
+    expect(formatGb(1610612736), '1,5 GB');
+    expect(formatGb(2147483648), '2 GB');
+  });
+
   test('harga per GB dibulatkan, dan tidak ada untuk kuota 0', () {
     expect(formatPricePerGb(25000, 15 * 1024 * 1024 * 1024), 'Rp1.667/GB');
     expect(formatPricePerGb(5000, 512 * 1024 * 1024), 'Rp10.000/GB');

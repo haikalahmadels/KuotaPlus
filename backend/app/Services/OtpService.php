@@ -87,7 +87,7 @@ class OtpService
                 return new ApiException(422, 'OTP_EXPIRED', 'Kode sudah kedaluwarsa. Kirim ulang kode.');
             }
 
-            if (! Hash::check($code, $otp->code_hash) || $otp->context !== $context) {
+            if (! Hash::check($code, $otp->code_hash) || ! $this->sameContext($otp->context, $context)) {
                 $otp->attempts++;
 
                 if ($otp->attempts >= self::MAX_ATTEMPTS) {
@@ -110,6 +110,18 @@ class OtpService
         if ($error) {
             throw $error;
         }
+    }
+
+    /** Kolom JSON MySQL menyusun ulang key, jadi urutan key tidak boleh ikut dibandingkan. */
+    private function sameContext(?array $stored, ?array $given): bool
+    {
+        if ($stored === null || $given === null) {
+            return $stored === $given;
+        }
+        ksort($stored);
+        ksort($given);
+
+        return $stored === $given;
     }
 
     private function ensureNotLocked(OtpCode $otp): void

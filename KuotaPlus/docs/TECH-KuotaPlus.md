@@ -190,7 +190,7 @@ Alert FR-13 tidak punya job sendiri. `AlertService` dipanggil di akhir `GET /hom
 | --- | --- | --- | --- |
 | Unit | `tests/Unit/Domain` | Tanpa DB | `ForecastCalculator`, `RecommendationCalculator`, `RewardEvaluator`, backtest MAPE. Dataset dari SEED |
 | Feature | `tests/Feature` | MySQL `kuotaplus_test` (`RefreshDatabase`) | Semua endpoint, idempotensi, callback (ganda, kedaluwarsa, signature salah), integritas poin, aturan berbagi kuota |
-| Konkurensi | `tests/Concurrency` (grup `concurrency`) | MySQL lokal + Laragon berjalan | Dua request berbagi kuota dan dua callback bersamaan lewat `Http::pool` ke server sungguhan |
+| Konkurensi | `tests/Concurrency` (grup `concurrency`, dikecualikan dari `php artisan test` biasa) | Laragon berjalan, database server sudah `migrate:fresh --seed`, server `APP_ENV=local` (demo OTP). Alamat: `CONCURRENCY_BASE_URL`, default `http://localhost` | Dua transfer bersamaan dengan satu OTP (hanya satu yang jadi, jatah tidak terlampaui) dan dua callback `PAID` bersamaan (provisioning sekali) lewat `Http::pool`. Tes tidak menghapus data; hasil dicek lewat API dan dengan membaca database server |
 
 Feature test memakai MySQL, bukan SQLite, karena SQLite tidak mendukung `lockForUpdate`. Tes konkurensi dipisah ke grup sendiri karena butuh server yang berjalan: `php artisan test --group=concurrency`.
 
