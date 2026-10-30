@@ -21,6 +21,12 @@ void main() {
     expect(formatRupiah(135000), 'Rp135.000');
   });
 
+  test('harga per GB dibulatkan, dan tidak ada untuk kuota 0', () {
+    expect(formatPricePerGb(25000, 15 * 1024 * 1024 * 1024), 'Rp1.667/GB');
+    expect(formatPricePerGb(5000, 512 * 1024 * 1024), 'Rp10.000/GB');
+    expect(formatPricePerGb(5000, 0), isNull);
+  });
+
   test('waktu selalu ditampilkan dalam WIB', () {
     // 17:30 UTC = 00:30 WIB keesokan harinya.
     final time = DateTime.parse('2026-10-29T17:30:00Z');

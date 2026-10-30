@@ -48,7 +48,7 @@ class _PurchaseList extends ConsumerWidget {
           child: _list(context, ref, value),
         ),
       AsyncError(:final error) => ErrorRetry(error: error, onRetry: () => ref.invalidate(transactionHistoryProvider)),
-      _ => const Center(child: CircularProgressIndicator()),
+      _ => const SkeletonCardList(),
     };
   }
 

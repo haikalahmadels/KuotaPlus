@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/mascot.dart';
 import '../../../core/api_exception.dart';
 import '../providers.dart';
 
@@ -68,9 +69,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text('Kuota+', style: theme.textTheme.headlineMedium),
+                  const Align(alignment: Alignment.centerLeft, child: Mascot(mood: MascotMood.wave, size: 96)),
+                  const SizedBox(height: 16),
+                  Text('Hai, aku Kuo!', style: theme.textTheme.headlineMedium),
                   const SizedBox(height: 4),
-                  Text('Masuk dengan nomor Nusantel', style: theme.textTheme.bodyLarge?.copyWith(
+                  Text('Masuk ke Kuota+ dengan nomor Nusantel', style: theme.textTheme.bodyLarge?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   )),
                   const SizedBox(height: 32),

@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../app/mascot.dart';
 import '../../../app/theme.dart';
 import '../../../app/widgets.dart';
 import '../../../core/api_exception.dart';
@@ -69,6 +70,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
       } else {
         _stopTimers();
         if (settled || transaction.status == 'paid') _invalidateAffected();
+        if (settled && transaction.status == 'paid') HapticFeedback.mediumImpact();
       }
     } on ApiException catch (e) {
       // Error jaringan sesaat tidak menghentikan polling; layar tetap menampilkan data terakhir.
@@ -101,7 +103,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
       appBar: AppBar(title: const Text('Pembayaran')),
       body: transaction == null
           ? (_error == null
-              ? const Center(child: CircularProgressIndicator())
+              ? const SkeletonCardList(count: 2)
               : ErrorRetry(error: _error!, onRetry: _refresh))
           : ListView(
               padding: const EdgeInsets.all(16),
@@ -201,7 +203,7 @@ class _PendingInstructions extends StatelessWidget {
         if (payment.qrString != null)
           Center(
             child: Container(
-              color: Colors.white,
+              color: AppColors.surface,
               padding: const EdgeInsets.all(12),
               child: QrImageView(data: payment.qrString!, size: 220, semanticsLabel: 'Kode QRIS'),
             ),
@@ -243,7 +245,11 @@ class _Result extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Icon(icon, color: color, size: 64),
+        // Kuo hanya ikut merayakan; gagal dan kedaluwarsa tetap serius tanpa maskot.
+        if (transaction.status == 'paid')
+          const Center(child: Mascot(mood: MascotMood.celebrate, size: 120))
+        else
+          Icon(icon, color: color, size: 64),
         const SizedBox(height: 12),
         Text(message, textAlign: TextAlign.center, style: theme.textTheme.titleLarge),
         const SizedBox(height: 24),

@@ -27,7 +27,7 @@ class TransactionDetailScreen extends ConsumerWidget {
       body: switch (transaction) {
         AsyncData(:final value) => _Detail(value),
         AsyncError(:final error) => ErrorRetry(error: error, onRetry: () => ref.invalidate(_transactionProvider(transactionId))),
-        _ => const Center(child: CircularProgressIndicator()),
+        _ => const SkeletonCardList(),
       },
     );
   }

@@ -27,7 +27,7 @@ class AppUsageScreen extends ConsumerWidget {
       body: switch (detail) {
         AsyncData(:final value) => _Detail(value),
         AsyncError(:final error) => ErrorRetry(error: error, onRetry: () => ref.invalidate(_appUsageProvider((appId, period)))),
-        _ => const Center(child: CircularProgressIndicator()),
+        _ => const SkeletonCardList(),
       },
     );
   }

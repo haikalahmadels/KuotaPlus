@@ -29,7 +29,7 @@ class RecommendationsScreen extends ConsumerWidget {
             child: _Content(value),
           ),
         AsyncError(:final error) => ErrorRetry(error: error, onRetry: () => ref.invalidate(recommendationsProvider)),
-        _ => const Center(child: CircularProgressIndicator()),
+        _ => const SkeletonCardList(),
       },
     );
   }

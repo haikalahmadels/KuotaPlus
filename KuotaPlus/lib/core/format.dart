@@ -15,6 +15,10 @@ String formatBytes(int bytes) =>
 /// 5000 → "Rp5.000".
 String formatRupiah(int amount) => _rupiah.format(amount);
 
+/// Harga per GB kuota, dibulatkan: (25000, 15 GB) → "Rp1.667/GB". Null jika kuota 0.
+String? formatPricePerGb(int price, int bytes) =>
+    bytes == 0 ? null : '${formatRupiah((price * _gb / bytes).round())}/GB';
+
 /// "6288100000001" → "0881-0000-0001".
 String formatMsisdn(String msisdn) {
   final local = msisdn.startsWith('62') ? '0${msisdn.substring(2)}' : msisdn;

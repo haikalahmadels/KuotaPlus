@@ -47,7 +47,7 @@ class LedgerScreen extends ConsumerWidget {
             },
           ),
         AsyncError(:final error) => ErrorRetry(error: error, onRetry: () => ref.invalidate(ledgerProvider)),
-        _ => const Center(child: CircularProgressIndicator()),
+        _ => const SkeletonCardList(),
       },
     );
   }

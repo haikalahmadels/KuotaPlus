@@ -2,7 +2,7 @@
 
 Oct 29, 2026 · @Haikal Ahmad El Salman · Draft 1
 
-Design token, daftar layar, dan peta navigasi aplikasi Flutter. Wireframe tiap layar ditambahkan di awal milestone yang membuatnya ([PLAN](PLAN-KuotaPlus.md)). Implementasi token ada di `lib/app/theme.dart`.
+Design token, daftar layar, dan peta navigasi aplikasi Flutter. Arah visual sejak M6.5 berdasar [riset aplikasi provider](RISET-UI-Provider.md): **utilitas tenang, karakter hangat**. Layar kerja bersih dengan angka di depan; kehangatan datang dari copywriting, sudut membulat, dan maskot Kuo di momen emosional saja. Wireframe tiap layar ditambahkan di awal milestone yang membuatnya ([PLAN](PLAN-KuotaPlus.md)). Implementasi token ada di `lib/app/theme.dart`.
 
 ## Prinsip
 
@@ -33,21 +33,34 @@ Semua pasangan teks di bawah sudah dicek memenuhi WCAG AA (≥ 4,5:1).
 | `danger` | `#B91C1C` | Boros, gagal, kuota habis, error | 6,5:1 di `surface` |
 | `noData` | `#9CA3AF` | Kalender "tidak ada data" | Dekoratif, selalu disertai legenda teks |
 
+Tint latar untuk chip status dan kartu yang disorot (M6.5). Teks di atasnya memakai warna status aslinya; jangan dimudakan karena hijau dan kuning tua sudah pas di batas AA.
+
+| Token | Hex | Pasangan teks | Kontras |
+| --- | --- | --- | --- |
+| `primaryContainer` | `#EAF0FF` | `primary` | 7,65:1 |
+| `successContainer` | `#DCFCE7` | `success` | 4,57:1 |
+| `warningContainer` | `#FEF3C7` | `warning` | 4,51:1 |
+| `dangerContainer` | `#FEE2E2` | `danger` | 5,3:1 |
+| `neutralContainer` | `#F3F4F6` | `textMuted` | 6,87:1. Juga warna skeleton dan latar bar |
+
 Status tidak pernah disampaikan dengan warna saja: selalu ada label teks atau ikon (misalnya chip "Berisiko" berwarna kuning tua dengan teksnya).
 
 ### Tipografi
 
-Font sistem bawaan Material 3 (Roboto di Android, font sistem di web), tanpa font tambahan.
+**Plus Jakarta Sans** (Tokotype, lisensi OFL) untuk semua teks, dibundel di `assets/fonts/` (Regular, Medium, SemiBold, Bold). Tanpa `google_fonts`, jadi jalan offline dan tidak ada lompatan layout di web.
 
-| Token | Ukuran / berat | Pemakaian |
+| Token | Ukuran / tinggi baris / berat | Pemakaian |
 | --- | --- | --- |
-| `display` | 32 / 700 | Angka utama: sisa kuota, saldo pulsa |
-| `title` | 20 / 600 | Judul layar dan kartu |
-| `body` | 16 / 400 | Teks biasa |
-| `label` | 14 / 500 | Label field, chip, tombol |
-| `caption` | 12 / 400 | Keterangan kecil, waktu diperbarui |
+| `displayNumber` | 36 / 40 / 700 | Angka utama, **satu per layar**: sisa kuota beranda, total bayar |
+| `secondaryNumber` | 24 / 32 / 600 | Angka pendukung: pulsa, jatah harian, kuota di kartu paket |
+| AppBar | 22 / 28 / 700 | Judul layar |
+| `titleLarge` | 20 / 28 / 600 | Judul bagian, harga |
+| `titleMedium` | 16 / 24 / 600 | Judul kartu |
+| `bodyLarge` / `bodyMedium` | 16/24, 14/20 / 400 | Teks biasa / keterangan di kartu |
+| `labelLarge` | 14 / 20 / 500 | Label field, chip, tombol |
+| `bodySmall` | 12 / 16 / 500 | Keterangan kecil, waktu diperbarui. Tidak ada teks di bawah 12 |
 
-Angka memakai `FontFeature.tabularFigures()` supaya tidak bergeser saat berubah.
+Angka memakai `FontFeature.tabularFigures()` supaya tidak bergeser saat berubah. Dibuktikan di `test/app/design_system_test.dart` (lebar "111" = "888").
 
 ### Spacing, radius, ukuran
 
@@ -60,6 +73,35 @@ Angka memakai `FontFeature.tabularFigures()` supaya tidak bergeser saat berubah.
 | Radius tombol dan input | 12 |
 | Tinggi tombol | 48 |
 | Target sentuh minimum | 48 × 48 |
+
+### Motion
+
+Motion adalah umpan balik, bukan pertunjukan: paling banyak 1–2 elemen bergerak per layar. Durasi dan kurva diambil dari kelas `Motion` di `theme.dart` (token Material 3 bawaan Flutter); widget tidak menulis milidetik sendiri.
+
+| Interaksi | Durasi / kurva | Komponen |
+| --- | --- | --- |
+| Tekan kartu | 150 ms, skala 0,97 + ripple | `PressScale` |
+| Pilih chip | instan + `HapticFeedback.selectionClick()` | `ChoiceChip` |
+| Sisa kuota menghitung naik, bar terisi | 600 ms, `emphasizedDecelerate`, dari nilai sebelumnya | `CountUpText`, `TweenAnimationBuilder` |
+| Memuat | Skeleton abu-abu seukuran nilai, diam (tanpa shimmer) | `SkeletonCardList`, `SkeletonBox` |
+| Bayar berhasil | Kuo merayakan sekali (± 1,5 detik) + `HapticFeedback.mediumImpact()` | `Mascot(celebrate)` |
+| Bayar gagal / kedaluwarsa | Instan, tanpa goyangan, tanpa maskot | Ikon + pesan + tombol |
+
+**Kurangi animasi.** `Motion.reduced(context)` bernilai true jika `disableAnimations` atau `accessibleNavigation` aktif. Saat itu semua durasi jadi nol dan maskot diam di pose akhirnya; perubahan teks dan warna tetap terjadi. Catatan: "Reduce Motion" iOS tidak menyalakan `disableAnimations`.
+
+### Maskot Kuo
+
+Kuo adalah karakter bulat berwarna `primary` dengan antena sinyal, digambar dengan kode (`lib/app/mascot.dart`, `CustomPainter`), jadi tanpa aset dan tanpa dependency. Warnanya hanya biru, putih, biru muda `#BFD3FF`, dan tinta `#0B1B4D`: tidak pernah hijau, kuning tua, atau merah supaya tidak terbaca sebagai status. Kuo selalu dekoratif (`ExcludeSemantics`); makna ada di teks di sebelahnya.
+
+| Ekspresi | Kapan | Tempat |
+| --- | --- | --- |
+| `wave` | Menyapa | Login (S01) |
+| `worried` | Kuota berisiko | Kartu prediksi beranda, di samping chip "Berisiko" |
+| `sleepy` | Kuota habis, tidak punya paket | Beranda, dengan tombol "Lihat paket". Nada tenang, tidak memarahi |
+| `celebrate` | Pembayaran berhasil | S08 hasil `paid`, sekali saja |
+| `rest` | Daftar kosong | `EmptyState`: Kuo + satu kalimat + satu tombol |
+
+Kuo **dilarang** muncul di form checkout, daftar metode bayar, OTP, pembayaran gagal, layar error, dan di dalam grafik. Kuo juga tidak dipakai untuk membuat pengguna merasa bersalah. Kuota aman = Kuo tidak muncul; angka yang memimpin.
 
 ## Navigasi
 
@@ -114,9 +156,10 @@ Diisi per milestone. Format: sketsa ASCII + daftar state (memuat, berhasil, koso
 
 ```
 ┌──────────────────────────────┐
-│                              │
-│  Kuota+                      │  ← title
-│  Masuk dengan nomor Nusantel │  ← textMuted
+│  (Kuo melambai)              │  ← Mascot(wave), M6.5
+│  Hai, aku Kuo!               │  ← headlineMedium
+│  Masuk ke Kuota+ dengan      │  ← textMuted
+│  nomor Nusantel              │
 │                              │
 │  Nomor HP                    │
 │  ┌────────────────────────┐  │
@@ -217,15 +260,17 @@ NavigationBar 5 tab: Beranda, Paket, Analisis, Reward, Riwayat. Tab yang belum d
 
 | State | Tampilan |
 | --- | --- |
-| Memuat pertama kali | Spinner di tengah |
+| Memuat pertama kali | Kartu skeleton (M6.5; sebelumnya spinner) |
 | Berhasil | Seperti sketsa; pull-to-refresh memuat ulang |
-| Tanpa paket | Kartu "Kamu tidak punya kuota aktif" + tombol "Lihat paket" (FR-2.6) |
-| Paket `exhausted` | Angka sisa diganti chip "Kuota habis" (danger) |
+| Tanpa paket | Kuo `sleepy` + "Kamu tidak punya kuota aktif" + tombol "Lihat paket" (FR-2.6) |
+| Paket `exhausted` | Angka sisa diganti Kuo `sleepy`, chip "Kuota habis" (danger), dan tombol "Lihat paket" |
 | Kartu masa tenggang | Chip "Masa tenggang s.d. [tanggal]" (warning) + kalimat "Isi ulang agar nomor tetap aktif" |
 | Offline dengan cache | Banner + data cache + label "Diperbarui" (FR-2.5) |
 | Offline tanpa cache / error | Pesan error + tombol "Coba lagi" |
 
 Kartu prediksi, jatah harian, rekomendasi, dan poin ditambahkan di M5–M6.
+
+**Urutan sejak M6.5:** kartu kuota (angka utama, sisa kartu pertama memakai `displayNumber`) → prediksi → jatah hari ini → pulsa (angka pendukung, tombol "Isi ulang" di kanan) → teaser rekomendasi → poin. Pertanyaan pertama pengguna adalah "berapa sisa kuotaku?", jadi pulsa tidak lagi di paling atas. Tidak ada banner carousel.
 
 ### S05 Katalog paket (M2)
 
@@ -234,19 +279,23 @@ Kartu prediksi, jatah harian, rekomendasi, dan poin ditambahkan di M5–M6.
 │ Paket                        │
 │ [Harian][Mingguan][Bulanan][Aplikasi] ← chip filter, satu terpilih
 │ ┌──────────────────────────┐ │
-│ │ Video 30 Hari    Rp65.000│ │
-│ │ 12 GB utama · 30 hari    │ │
+│ │ Video 30 Hari            │ │
+│ │ 12 GB                    │ │  ← secondaryNumber
+│ │ Kuota utama · 30 hari    │ │
 │ │ + 16 GB Video            │ │
 │ │ YouTube, TikTok, Netflix…│ │  ← app_examples
-│ │                   [Beli] │ │
+│ │ Rp65.000          [Beli] │ │
+│ │ ≈ Rp5.417/GB utama       │ │  ← harga per GB terbuka (M6.5)
 │ └──────────────────────────┘ │
 └──────────────────────────────┘
 ```
 
+Sejak M6.5: seluruh kartu bisa diketuk (efek tekan), paket rekomendasi berbingkai `primary`, dan memilih chip memberi getar halus. Harga per GB dihitung dari kuota utama saja supaya kuota aplikasi tidak menggelembungkan nilainya. Harga coret hanya dipakai jika ada diskon nyata.
+
 | State | Tampilan |
 | --- | --- |
-| Memuat | Spinner |
-| Grup kosong | "Belum ada paket di kategori ini" |
+| Memuat | Kartu skeleton |
+| Grup kosong | `EmptyState`: Kuo `rest` + "Belum ada paket di kategori ini" |
 | Error | Pesan + "Coba lagi" |
 | Tombol Beli | Membuka checkout (M3). Di M2 menampilkan snackbar "Pembelian segera tersedia" |
 
@@ -327,8 +376,8 @@ Kartu prediksi, jatah harian, rekomendasi, dan poin ditambahkan di M5–M6.
 | State | Tampilan |
 | --- | --- |
 | `pending` | Instruksi bayar; polling `GET /transactions/{id}` tiap 3 detik + saat aplikasi kembali ke foreground |
-| `paid` | Ikon centang (success), "Paket sudah aktif" / "Pulsa dan masa aktif sudah bertambah", tombol Ke Beranda dan Lihat riwayat |
-| `failed` | Ikon silang (danger), "Pembayaran ditolak" |
+| `paid` | Kuo `celebrate` sekali + getar sedang (M6.5), "Paket sudah aktif" / "Pulsa dan masa aktif sudah bertambah", tombol Ke Beranda dan Lihat riwayat |
+| `failed` | Ikon silang (danger), "Pembayaran ditolak". Tanpa maskot |
 | `expired` | Ikon jam (muted), "Waktu pembayaran habis" |
 | Error jaringan saat polling | Data terakhir tetap tampil, polling berlanjut |
 
@@ -434,7 +483,7 @@ Disisipkan di bawah kartu Pulsa, sebelum "Kuota aktif":
 │ Terpakai 300 MB, sisa 212│
 └──────────────────────────┘
 ┌──────────────────────────┐
-│ 🐷 Hemat Rp80.000/bulan  >│  ← hanya jika saving_30d > 0 (FR-2.4)
+│ ◎ Hemat Rp80.000/bulan  >│  ← ikon garis savings, latar successContainer  ← hanya jika saving_30d > 0 (FR-2.4)
 │    dengan Bulanan 15 GB  │
 └──────────────────────────┘
 ```

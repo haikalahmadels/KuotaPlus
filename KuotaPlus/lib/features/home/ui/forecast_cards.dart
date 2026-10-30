@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/mascot.dart';
 import '../../../app/theme.dart';
 import '../../../app/widgets.dart';
 import '../../../core/format.dart';
@@ -22,38 +23,60 @@ class ForecastCard extends StatelessWidget {
       Forecast(confidence: 'none') => ('Prediksi belum tersedia', 'Kumpulkan data pemakaian 3 hari dulu.'),
       Forecast(predictedEmptyAt: null) => ('Kuota aman sampai paket berakhir', 'Pemakaian data selulermu hampir nol.'),
       Forecast(isRisk: true) => (
-          'Kuota diperkirakan habis ${formatDate(f.predictedEmptyAt!)}',
-          '${f.daysEarly} hari lebih cepat dari paket berakhir (${formatDate(f.mainExpiresAt)}). Coba hemat atau lihat rekomendasi paket.',
-        ),
-      _ => ('Kuota diperkirakan habis ${formatDate(f.predictedEmptyAt!)}', 'Setelah paket berakhir ${formatDate(f.mainExpiresAt)}.'),
+        'Kuota diperkirakan habis ${formatDate(f.predictedEmptyAt!)}',
+        '${f.daysEarly} hari lebih cepat dari paket berakhir (${formatDate(f.mainExpiresAt)}). Coba hemat atau lihat rekomendasi paket.',
+      ),
+      _ => (
+        'Kuota diperkirakan habis ${formatDate(f.predictedEmptyAt!)}',
+        'Setelah paket berakhir ${formatDate(f.mainExpiresAt)}.',
+      ),
     };
 
-    return Card(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        onTap: f.isRisk ? () => context.push('/recommendations') : null,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  if (f.status != null)
-                    StatusChip(
-                      label: f.isRisk ? 'Berisiko' : 'Aman',
-                      color: f.isRisk ? AppColors.warning : AppColors.success,
-                    ),
-                  if (f.confidence == 'low') const StatusChip(label: 'Perkiraan awal', color: AppColors.textMuted),
-                ],
+    final details = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            if (f.status != null)
+              StatusChip(
+                label: f.isRisk ? 'Berisiko' : 'Aman',
+                color: f.isRisk ? AppColors.warning : AppColors.success,
               ),
-              if (f.status != null || f.confidence == 'low') const SizedBox(height: 8),
-              Text(title, style: theme.textTheme.titleLarge),
-              const SizedBox(height: 4),
-              Text(body, style: muted),
-            ],
+            if (f.confidence == 'low') const StatusChip(label: 'Perkiraan awal', color: AppColors.textMuted),
+          ],
+        ),
+        if (f.status != null || f.confidence == 'low') const SizedBox(height: 8),
+        Text(title, style: theme.textTheme.titleMedium),
+        const SizedBox(height: 4),
+        Text(body, style: muted),
+        if (f.isRisk)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              'Lihat paket hemat',
+              style: theme.textTheme.labelLarge?.copyWith(color: AppColors.primary, fontWeight: FontWeight.w700),
+            ),
+          ),
+      ],
+    );
+
+    return PressScale(
+      enabled: f.isRisk,
+      child: Card(
+        child: InkWell(
+          onTap: f.isRisk ? () => context.push('/recommendations') : null,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: details),
+                // Kuo khawatir hanya saat berisiko; makna tetap di chip dan teks.
+                if (f.isRisk) ...[const SizedBox(width: 8), const Mascot(mood: MascotMood.worried, size: 56)],
+              ],
+            ),
           ),
         ),
       ),
@@ -80,24 +103,28 @@ class DailyBudgetCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Jatah hari ini', style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
-            Text(formatBytes(budgetBytes), style: displayNumber),
+            Text(
+              'Jatah hari ini',
+              style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            ),
+            CountUpText(value: budgetBytes, format: formatBytes, style: secondaryNumber),
             const SizedBox(height: 8),
             LinearProgressIndicator(
               value: ratio,
               minHeight: 8,
               borderRadius: BorderRadius.circular(4),
-              backgroundColor: AppColors.border,
+              backgroundColor: AppColors.neutralContainer,
               color: over ? AppColors.danger : AppColors.primary,
               // semanticsValue harus angka; keterangan lengkap dibacakan lewat label.
-              semanticsLabel: 'Pemakaian hari ini ${formatBytes(usedTodayBytes)} dari jatah ${formatBytes(budgetBytes)}',
+              semanticsLabel:
+                  'Pemakaian hari ini ${formatBytes(usedTodayBytes)} dari jatah ${formatBytes(budgetBytes)}',
             ),
             const SizedBox(height: 8),
             Text(
               over
                   ? 'Terpakai ${formatBytes(usedTodayBytes)}, lewat ${formatBytes(usedTodayBytes - budgetBytes)} dari jatah'
                   : 'Terpakai ${formatBytes(usedTodayBytes)}, sisa ${formatBytes(budgetBytes - usedTodayBytes)}',
-              style: theme.textTheme.bodyLarge?.copyWith(color: over ? AppColors.danger : null),
+              style: theme.textTheme.bodyMedium?.copyWith(color: over ? AppColors.danger : null),
             ),
           ],
         ),
@@ -115,14 +142,17 @@ class RecommendationTeaser extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: const Icon(Icons.savings_outlined, color: AppColors.success),
-        title: Text('Hemat ${formatRupiah(saving)}/bulan'),
-        subtitle: Text('dengan $packageName'),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () => context.push('/recommendations'),
+    return PressScale(
+      child: Card(
+        color: AppColors.successContainer,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          leading: const Icon(Icons.savings_outlined, color: AppColors.success),
+          title: Text('Hemat ${formatRupiah(saving)}/bulan', style: const TextStyle(fontWeight: FontWeight.w700)),
+          subtitle: Text('dengan $packageName'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push('/recommendations'),
+        ),
       ),
     );
   }
@@ -137,14 +167,16 @@ class PointsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: const Icon(Icons.stars_outlined, color: AppColors.primary),
-        title: Text('$balance poin'),
-        subtitle: Text(streak > 0 ? '$streak hari hemat berturut-turut' : 'Hemat hari ini untuk dapat poin'),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () => context.go('/rewards'),
+    return PressScale(
+      child: Card(
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          leading: const Icon(Icons.stars_outlined, color: AppColors.primary),
+          title: Text('$balance poin', style: const TextStyle(fontWeight: FontWeight.w700)),
+          subtitle: Text(streak > 0 ? '$streak hari hemat berturut-turut' : 'Hemat hari ini untuk dapat poin'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.go('/rewards'),
+        ),
       ),
     );
   }

@@ -29,7 +29,7 @@ class _TopupScreenState extends ConsumerState<TopupScreen> {
       body: switch (options) {
         AsyncData(:final value) => _content(value),
         AsyncError(:final error) => ErrorRetry(error: error, onRetry: () => ref.invalidate(topupOptionsProvider)),
-        _ => const Center(child: CircularProgressIndicator()),
+        _ => const SkeletonCardList(),
       },
     );
   }
