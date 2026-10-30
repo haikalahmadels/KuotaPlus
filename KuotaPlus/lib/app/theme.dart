@@ -21,6 +21,12 @@ abstract final class AppColors {
   static const dangerContainer = Color(0xFFFEE2E2);
   static const neutralContainer = Color(0xFFF3F4F6);
 
+  // Aksen dekoratif untuk kategori (kuota aplikasi, aplikasi teratas, menu). Bukan status: tanpa hijau/kuning/merah.
+  static const violet = Color(0xFF6D28D9);
+  static const violetContainer = Color(0xFFEDE9FE);
+  static const sky = Color(0xFF0369A1);
+  static const skyContainer = Color(0xFFE0F2FE);
+
   /// Pasangan tint untuk warna status; warna lain jatuh ke tint netral.
   static Color containerOf(Color color) => switch (color) {
     primary => primaryContainer,
@@ -40,9 +46,14 @@ abstract final class MascotColors {
 }
 
 abstract final class AppRadius {
-  static const card = 16.0;
+  /// Kartu utama beranda.
+  static const hero = 32.0;
+  static const card = 24.0;
   static const control = 12.0;
 }
+
+/// Bayangan lembut untuk kartu yang menonjol (menu cepat, navbar). Kartu biasa cukup bingkai.
+const softShadow = [BoxShadow(color: Color(0x140F1E50), blurRadius: 24, offset: Offset(0, 8))];
 
 /// Durasi dan kurva Material 3 bawaan Flutter. Widget tidak menulis milidetik sendiri.
 abstract final class Motion {

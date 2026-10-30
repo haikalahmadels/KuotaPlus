@@ -21,3 +21,8 @@ final usageSummaryProvider = FutureProvider.autoDispose<UsageSummary>(
 );
 
 final usageAccessProvider = FutureProvider.autoDispose<bool>((ref) => hasUsageAccess());
+
+/// Pemakaian hari ini untuk beranda, terpisah dari periode yang dipilih di layar Analisis.
+final todayUsageProvider = FutureProvider.autoDispose<UsageSummary>(
+  (ref) => ref.watch(usageRepositoryProvider).summary('today'),
+);

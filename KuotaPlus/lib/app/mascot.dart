@@ -25,10 +25,13 @@ enum MascotMood {
 /// Maskot Kuota+, digambar dengan kode (tanpa aset). Selalu dekoratif: makna ada di teks di sebelahnya.
 /// Gerak idle (napas, kedip, lambaian) mati saat "kurangi animasi" aktif.
 class Mascot extends StatefulWidget {
-  const Mascot({super.key, required this.mood, this.size = 96});
+  const Mascot({super.key, required this.mood, this.size = 96, this.light = false});
 
   final MascotMood mood;
   final double size;
+
+  /// Badan putih bergaris biru, untuk di atas latar biru (mis. mengapung di air tangki).
+  final bool light;
 
   @override
   State<Mascot> createState() => _MascotState();
@@ -84,7 +87,7 @@ class _MascotState extends State<Mascot> with SingleTickerProviderStateMixin {
         child: AnimatedBuilder(
           animation: _controller,
           builder: (context, _) =>
-              CustomPaint(size: Size.square(widget.size), painter: _MascotPainter(widget.mood, _controller.value)),
+              CustomPaint(size: Size.square(widget.size), painter: _MascotPainter(widget.mood, _controller.value, light: widget.light)),
         ),
       ),
     );
@@ -92,7 +95,12 @@ class _MascotState extends State<Mascot> with SingleTickerProviderStateMixin {
 }
 
 class _MascotPainter extends CustomPainter {
-  _MascotPainter(this.mood, this.t);
+  _MascotPainter(this.mood, this.t, {this.light = false});
+
+  final bool light;
+
+  /// Warna mata, alis, dan mulut: kontras dengan warna badan.
+  Color get _face => light ? MascotColors.body : MascotColors.white;
 
   final MascotMood mood;
 
@@ -160,7 +168,12 @@ class _MascotPainter extends CustomPainter {
 
   void _body(Canvas canvas) {
     final squash = mood == MascotMood.sleepy ? 3.0 : 0.0;
-    canvas.drawRRect(RRect.fromLTRBR(16, 28 + squash, 84, 92, const Radius.circular(30)), _fill);
+    final body = RRect.fromLTRBR(16, 28 + squash, 84, 92, const Radius.circular(30));
+    canvas.drawRRect(body, light ? (Paint()..color = MascotColors.white) : _fill);
+    if (light) {
+      canvas.drawRRect(body, _stroke(MascotColors.body));
+      return;
+    }
     // Kilau di dahi supaya badan terasa membulat.
     canvas.drawRRect(
       RRect.fromLTRBR(28, 34 + squash, 44, 39 + squash, const Radius.circular(3)),
@@ -195,7 +208,7 @@ class _MascotPainter extends CustomPainter {
   void _eyes(Canvas canvas) {
     const left = Offset(38, 56);
     const right = Offset(62, 56);
-    final line = _stroke(MascotColors.white);
+    final line = _stroke(_face);
 
     switch (mood) {
       case MascotMood.wave || MascotMood.celebrate:
@@ -211,8 +224,8 @@ class _MascotPainter extends CustomPainter {
       case MascotMood.worried:
         _openEyes(canvas, [left, right], lookUp: true);
         // Alis naik di tengah.
-        canvas.drawLine(const Offset(31, 44), const Offset(42, 41), _stroke(MascotColors.white, 3));
-        canvas.drawLine(const Offset(69, 44), const Offset(58, 41), _stroke(MascotColors.white, 3));
+        canvas.drawLine(const Offset(31, 44), const Offset(42, 41), _stroke(_face, 3));
+        canvas.drawLine(const Offset(69, 44), const Offset(58, 41), _stroke(_face, 3));
     }
   }
 
@@ -220,8 +233,8 @@ class _MascotPainter extends CustomPainter {
     // Kedip singkat menjelang akhir setiap putaran.
     final blink = t > 0.9 && t < 0.96 ? 0.15 : 1.0;
     for (final c in centers) {
-      canvas.drawOval(Rect.fromCenter(center: c, width: 15, height: 17 * blink), Paint()..color = MascotColors.white);
-      if (blink == 1) {
+      canvas.drawOval(Rect.fromCenter(center: c, width: 15, height: 17 * blink), Paint()..color = light ? MascotColors.ink : MascotColors.white);
+      if (blink == 1 && !light) {
         canvas.drawCircle(c + Offset(1, lookUp ? -2 : 1), 4.5, Paint()..color = MascotColors.ink);
       }
     }
@@ -236,7 +249,7 @@ class _MascotPainter extends CustomPainter {
             ..moveTo(c.dx - 9, c.dy - 3)
             ..quadraticBezierTo(c.dx, c.dy + 14, c.dx + 9, c.dy - 3)
             ..close(),
-          Paint()..color = MascotColors.white,
+          Paint()..color = _face,
         );
       case MascotMood.wave || MascotMood.rest:
         canvas.drawArc(
@@ -244,7 +257,7 @@ class _MascotPainter extends CustomPainter {
           0.4,
           math.pi - 0.8,
           false,
-          _stroke(MascotColors.white),
+          _stroke(_face),
         );
       case MascotMood.worried:
         canvas.drawPath(
@@ -252,10 +265,10 @@ class _MascotPainter extends CustomPainter {
             ..moveTo(c.dx - 7, c.dy + 1)
             ..quadraticBezierTo(c.dx - 3.5, c.dy - 3, c.dx, c.dy + 1)
             ..quadraticBezierTo(c.dx + 3.5, c.dy + 5, c.dx + 7, c.dy + 1),
-          _stroke(MascotColors.white, 3),
+          _stroke(_face, 3),
         );
       case MascotMood.sleepy:
-        canvas.drawCircle(c, 3.5, _stroke(MascotColors.white, 2.5));
+        canvas.drawCircle(c, 3.5, _stroke(_face, 2.5));
     }
   }
 
@@ -279,5 +292,5 @@ class _MascotPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_MascotPainter old) => old.mood != mood || old.t != t;
+  bool shouldRepaint(_MascotPainter old) => old.mood != mood || old.t != t || old.light != light;
 }

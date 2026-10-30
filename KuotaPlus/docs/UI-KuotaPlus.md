@@ -43,6 +43,13 @@ Tint latar untuk chip status dan kartu yang disorot (M6.5). Teks di atasnya mema
 | `dangerContainer` | `#FEE2E2` | `danger` | 5,3:1 |
 | `neutralContainer` | `#F3F4F6` | `textMuted` | 6,87:1. Juga warna skeleton dan latar bar |
 
+Aksen dekoratif kategori (kuota aplikasi, aplikasi teratas). Bukan status, jadi bukan hijau, kuning tua, atau merah.
+
+| Token | Hex | Pasangan | Kontras |
+| --- | --- | --- | --- |
+| `violet` / `violetContainer` | `#6D28D9` / `#EDE9FE` | teks violet di tint | 5,98:1 |
+| `sky` / `skyContainer` | `#0369A1` / `#E0F2FE` | teks sky di tint | 5,17:1 |
+
 Status tidak pernah disampaikan dengan warna saja: selalu ada label teks atau ikon (misalnya chip "Berisiko" berwarna kuning tua dengan teksnya).
 
 ### Tipografi
@@ -69,7 +76,8 @@ Angka memakai `FontFeature.tabularFigures()` supaya tidak bergeser saat berubah.
 | Spacing | 4, 8, 12, 16, 24, 32 |
 | Padding layar | 16 |
 | Jarak antar kartu | 12 |
-| Radius kartu | 16 |
+| Radius kartu utama beranda (`AppRadius.hero`) | 32 |
+| Radius kartu | 24 |
 | Radius tombol dan input | 12 |
 | Tinggi tombol | 48 |
 | Target sentuh minimum | 48 × 48 |
@@ -95,8 +103,8 @@ Kuo adalah karakter bulat berwarna `primary` dengan antena sinyal, digambar deng
 
 | Ekspresi | Kapan | Tempat |
 | --- | --- | --- |
-| `wave` | Menyapa | Login (S01) |
-| `worried` | Kuota berisiko | Kartu prediksi beranda, di samping chip "Berisiko" |
+| `wave` | Menyapa | Login (S01), kartu Paket aktif, tangki Hari ini |
+| `worried` | Jatah hari ini terlewati | Tangki "Hari ini" di beranda, Kuo mengapung di dasar |
 | `sleepy` | Kuota habis, tidak punya paket | Beranda, dengan tombol "Lihat paket". Nada tenang, tidak memarahi |
 | `celebrate` | Pembayaran berhasil | S08 hasil `paid`, sekali saja |
 | `rest` | Daftar kosong | `EmptyState`: Kuo + satu kalimat + satu tombol |
@@ -119,7 +127,8 @@ Kuo **dilarang** muncul di form checkout, daftar metode bayar, OTP, pembayaran g
 ```
 
 - Belum login atau menerima 401 → `/login?from=<route asal>`, lalu kembali ke route asal setelah login.
-- Layar di luar 5 tab dibuka di atas shell (tanpa NavigationBar) dan punya tombol kembali.
+- Navbar (mockup G revisi): `NavigationBar` putih bergaris atas, tab aktif berikon biru di kapsul `primaryContainer`.
+- Layar di luar 5 tab dibuka di atas shell (tanpa navbar) dan punya tombol kembali.
 - `/payment/:id` dibuka setelah checkout atau isi ulang, dan dari tombol "Lanjutkan bayar" di detail transaksi.
 - Deep link notifikasi memakai route yang sama (`target` di objek `Alert`).
 
@@ -270,7 +279,20 @@ NavigationBar 5 tab: Beranda, Paket, Analisis, Reward, Riwayat. Tab yang belum d
 
 Kartu prediksi, jatah harian, rekomendasi, dan poin ditambahkan di M5–M6.
 
-**Urutan sejak M6.5:** kartu kuota (angka utama, sisa kartu pertama memakai `displayNumber`) → prediksi → jatah hari ini → pulsa (angka pendukung, tombol "Isi ulang" di kanan) → teaser rekomendasi → poin. Pertanyaan pertama pengguna adalah "berapa sisa kuotaku?", jadi pulsa tidak lagi di paling atas. Tidak ada banner carousel.
+**Tata letak sejak M6.5 (mockup G, disetujui 30 Okt 2026):** desain interaktif ada di kanvas https://claude.ai/artifact/BPCg1puqLgootiQWbToLLC (artboard "Mockup G"). Sketsa di atas adalah versi M2.
+
+1. Header: tanggal, "Hai!", nomor HP dan jam diperbarui, tombol akun (menu Keluar). Tanpa AppBar.
+2. Tab geser **Paket aktif** (bawaan) / **Hari ini** di atas kartu utama (`SegmentedToggle`).
+3. Kartu utama (`primaryContainer`, radius 32):
+   - *Paket aktif*: tangki berombak (seperti *Hari ini*) setinggi sisa kuota utama semua paket, label "N% tersisa" (atau chip "Kuota habis"), angka sisa utama `displayNumber` menghitung naik, nama paket dan tanggal berakhir, baris kuota aplikasi (violet) jika ada, lalu **sisa pulsa** dan **nomor aktif s.d.** (atau masa tenggang, kuning tua) di dasar kartu. Air hanya di area bawah teks supaya teks selalu terbaca. Ketuk kartu = rincian per paket (bottom sheet). Tanpa paket: "Kamu tidak punya kuota aktif" + "Lihat paket", Kuo `sleepy`.
+   - *Hari ini*: tangki jatah harian, air berombak setinggi sisa jatah (maks. 55% kartu agar teks terbaca), Kuo mengapung di permukaan (varian badan putih `Mascot(light: true)`). Ketuk = penjelasan "Kenapa X?". Lewat jatah: teks danger, air kosong, Kuo `worried`.
+4. Menu cepat: Beli paket, Isi ulang, Bagi kuota (snackbar "segera hadir" sampai M8), Analisis.
+5. Kartu prediksi **di luar** kartu utama. Saat berisiko bisa dibuka: linimasa hari ini → habis → paket berakhir, saran jatah, tombol "Lihat paket hemat".
+6. Teaser rekomendasi (hanya jika hemat).
+7. "Dipakai untuk apa hari ini?": 3 aplikasi teratas `GET /usage/summary?period=today`, disembunyikan jika belum ada data.
+8. Rekor hemat 7 hari dari kalender `GET /points` (6 hari lalu + hari ini), saldo poin ke layar Reward. Ketuk hari = catatannya.
+
+Blok muncul bertahap sekali (`EnterAnimation`); semua animasi mati saat "kurangi animasi".
 
 ### S05 Katalog paket (M2)
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/api_exception.dart';
 import 'mascot.dart';
@@ -205,6 +206,103 @@ class EmptyState extends StatelessWidget {
             FilledButton(onPressed: onAction, child: Text(actionLabel!)),
           ],
         ],
+      ),
+    );
+  }
+}
+
+/// Tab geser dengan penanda yang meluncur (kartu utama beranda).
+class SegmentedToggle extends StatelessWidget {
+  const SegmentedToggle({super.key, required this.labels, required this.selected, required this.onChanged});
+
+  final List<String> labels;
+  final int selected;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final duration = Motion.of(context, Motion.enter);
+
+    return Container(
+      height: 48,
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(color: const Color(0xFFE9ECF2), borderRadius: BorderRadius.circular(16)),
+      child: Stack(
+        children: [
+          AnimatedAlign(
+            alignment: Alignment(labels.length == 1 ? 0 : -1 + 2 * selected / (labels.length - 1), 0),
+            duration: duration,
+            curve: Motion.enterCurve,
+            child: FractionallySizedBox(
+              widthFactor: 1 / labels.length,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: const [BoxShadow(color: Color(0x1A0F1E50), blurRadius: 8, offset: Offset(0, 2))],
+                ),
+              ),
+            ),
+          ),
+          Row(
+            children: [
+              for (final (i, label) in labels.indexed)
+                Expanded(
+                  child: Semantics(
+                    selected: i == selected,
+                    button: true,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: i == selected
+                          ? null
+                          : () {
+                              HapticFeedback.selectionClick();
+                              onChanged(i);
+                            },
+                      child: Center(
+                        child: AnimatedDefaultTextStyle(
+                          duration: duration,
+                          style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: i == selected ? AppColors.text : AppColors.textMuted,
+                          ),
+                          child: Text(label),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Muncul sekali dengan naik dan memudar; [index] memberi jeda bertahap antar blok.
+class EnterAnimation extends StatelessWidget {
+  const EnterAnimation({super.key, required this.child, this.index = 0});
+
+  final Widget child;
+  final int index;
+
+  static const _step = Duration(milliseconds: 60);
+
+  @override
+  Widget build(BuildContext context) {
+    if (Motion.reduced(context)) return child;
+    final delay = _step * index;
+    final total = Motion.enter + delay;
+
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: total,
+      curve: Interval(delay.inMilliseconds / total.inMilliseconds, 1, curve: Motion.enterCurve),
+      child: child,
+      builder: (context, t, child) => Opacity(
+        opacity: t,
+        child: Transform.translate(offset: Offset(0, (1 - t) * 14), child: child),
       ),
     );
   }

@@ -8,6 +8,7 @@ import 'package:kuota_plus/app/theme.dart';
 import 'package:kuota_plus/core/models/forecast.dart';
 import 'package:kuota_plus/features/home/data/home_repository.dart';
 import 'package:kuota_plus/features/home/ui/forecast_cards.dart';
+import 'package:kuota_plus/features/home/ui/home_cards.dart';
 import 'package:kuota_plus/features/recommendations/data/recommendation_repository.dart';
 
 Map<String, dynamic> _fixture(String name) =>
@@ -56,7 +57,7 @@ void main() {
   testWidgets('kartu prediksi tanpa data dan kartu jatah yang terlewati', (tester) async {
     await tester.pumpWidget(_wrap(Column(children: [
       ForecastCard(Forecast(confidence: 'none', status: null, remainingBytes: 0, mainExpiresAt: DateTime(2026, 12))),
-      const DailyBudgetCard(budgetBytes: 500 * 1024 * 1024, usedTodayBytes: 650 * 1024 * 1024),
+      const DailyTank(budgetBytes: 500 * 1024 * 1024, usedTodayBytes: 650 * 1024 * 1024),
     ])));
 
     expect(find.text('Kumpulkan data pemakaian 3 hari dulu.'), findsOneWidget);

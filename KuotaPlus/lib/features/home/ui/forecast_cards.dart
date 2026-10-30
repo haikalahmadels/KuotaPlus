@@ -1,63 +1,80 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../app/mascot.dart';
 import '../../../app/theme.dart';
 import '../../../app/widgets.dart';
 import '../../../core/format.dart';
 import '../../../core/models/forecast.dart';
 
-/// FR-2.2 / FR-9: "Kuota diperkirakan habis [tanggal]" + Aman/Berisiko.
-class ForecastCard extends StatelessWidget {
-  const ForecastCard(this.forecast, {super.key});
+/// FR-2.2 / FR-9: "Kuota diperkirakan habis [tanggal]" + Aman/Berisiko. Di luar kartu utama (mockup G);
+/// saat berisiko bisa dibuka untuk linimasa, saran jatah, dan tombol ke rekomendasi.
+class ForecastCard extends StatefulWidget {
+  const ForecastCard(this.forecast, {super.key, this.now});
 
   final Forecast forecast;
+
+  /// Titik "hari ini" di linimasa; default jam perangkat.
+  final DateTime? now;
+
+  @override
+  State<ForecastCard> createState() => _ForecastCardState();
+}
+
+class _ForecastCardState extends State<ForecastCard> {
+  bool _open = false;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final muted = theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant);
-    final f = forecast;
+    final muted = theme.textTheme.bodyMedium?.copyWith(color: AppColors.textMuted);
+    final f = widget.forecast;
 
     final (String title, String body) = switch (f) {
       Forecast(confidence: 'none') => ('Prediksi belum tersedia', 'Kumpulkan data pemakaian 3 hari dulu.'),
       Forecast(predictedEmptyAt: null) => ('Kuota aman sampai paket berakhir', 'Pemakaian data selulermu hampir nol.'),
       Forecast(isRisk: true) => (
-        'Kuota diperkirakan habis ${formatDate(f.predictedEmptyAt!)}',
-        '${f.daysEarly} hari lebih cepat dari paket berakhir (${formatDate(f.mainExpiresAt)}). Coba hemat atau lihat rekomendasi paket.',
-      ),
-      _ => (
-        'Kuota diperkirakan habis ${formatDate(f.predictedEmptyAt!)}',
-        'Setelah paket berakhir ${formatDate(f.mainExpiresAt)}.',
-      ),
+          'Kuota diperkirakan habis ${formatDate(f.predictedEmptyAt!)}',
+          '${f.daysEarly} hari lebih cepat dari paket berakhir (${formatDate(f.mainExpiresAt)}).',
+        ),
+      _ => ('Kuota diperkirakan habis ${formatDate(f.predictedEmptyAt!)}', 'Setelah paket berakhir ${formatDate(f.mainExpiresAt)}.'),
     };
 
-    final details = Column(
+    final header = Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            if (f.status != null)
-              StatusChip(
-                label: f.isRisk ? 'Berisiko' : 'Aman',
-                color: f.isRisk ? AppColors.warning : AppColors.success,
-              ),
-            if (f.confidence == 'low') const StatusChip(label: 'Perkiraan awal', color: AppColors.textMuted),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (f.status != null || f.confidence == 'low') ...[
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    if (f.status != null)
+                      StatusChip(
+                        label: f.isRisk ? 'Berisiko' : 'Aman',
+                        color: f.isRisk ? AppColors.warning : AppColors.success,
+                      ),
+                    if (f.confidence == 'low') const StatusChip(label: 'Perkiraan awal', color: AppColors.textMuted),
+                  ],
+                ),
+                const SizedBox(height: 8),
+              ],
+              Text(title, style: theme.textTheme.titleMedium),
+              const SizedBox(height: 2),
+              Text(body, style: muted),
+            ],
+          ),
         ),
-        if (f.status != null || f.confidence == 'low') const SizedBox(height: 8),
-        Text(title, style: theme.textTheme.titleMedium),
-        const SizedBox(height: 4),
-        Text(body, style: muted),
         if (f.isRisk)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Text(
-              'Lihat paket hemat',
-              style: theme.textTheme.labelLarge?.copyWith(color: AppColors.primary, fontWeight: FontWeight.w700),
-            ),
+          AnimatedRotation(
+            turns: _open ? 0.5 : 0,
+            duration: Motion.of(context, Motion.enter),
+            curve: Motion.enterCurve,
+            child: const Icon(Icons.expand_more_rounded, color: AppColors.textMuted),
           ),
       ],
     );
@@ -66,15 +83,21 @@ class ForecastCard extends StatelessWidget {
       enabled: f.isRisk,
       child: Card(
         child: InkWell(
-          onTap: f.isRisk ? () => context.push('/recommendations') : null,
+          onTap: f.isRisk ? () => setState(() => _open = !_open) : null,
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(child: details),
-                // Kuo khawatir hanya saat berisiko; makna tetap di chip dan teks.
-                if (f.isRisk) ...[const SizedBox(width: 8), const Mascot(mood: MascotMood.worried, size: 56)],
+                Semantics(expanded: f.isRisk ? _open : null, child: header),
+                AnimatedSize(
+                  duration: Motion.of(context, Motion.enter),
+                  curve: Motion.enterCurve,
+                  alignment: Alignment.topCenter,
+                  child: _open && f.isRisk
+                      ? _Details(f, now: widget.now ?? DateTime.now())
+                      : const SizedBox(width: double.infinity),
+                ),
               ],
             ),
           ),
@@ -84,50 +107,101 @@ class ForecastCard extends StatelessWidget {
   }
 }
 
-/// FR-2.3: "Jatah hari ini X MB, terpakai Y MB" dengan progress bar.
-class DailyBudgetCard extends StatelessWidget {
-  const DailyBudgetCard({super.key, required this.budgetBytes, required this.usedTodayBytes});
+class _Details extends StatelessWidget {
+  const _Details(this.forecast, {required this.now});
 
-  final int budgetBytes;
-  final int usedTodayBytes;
+  final Forecast forecast;
+  final DateTime now;
+
+  /// "5 Nov 2026" → "5 Nov" untuk label linimasa yang sempit.
+  static String _short(DateTime time) => formatDate(time).split(' ').take(2).join(' ');
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final over = usedTodayBytes > budgetBytes;
-    final ratio = budgetBytes == 0 ? 1.0 : (usedTodayBytes / budgetBytes).clamp(0.0, 1.0);
+    final f = forecast;
+    final span = f.mainExpiresAt.difference(now).inMinutes;
+    final at = span <= 0 ? 0.0 : (f.predictedEmptyAt!.difference(now).inMinutes / span).clamp(0.0, 1.0);
+    // Agar cukup sampai paket berakhir: sisa kuota dibagi hari tersisa.
+    final daysLeft = (span / (60 * 24)).ceil();
+    final safeDaily = daysLeft <= 0 ? null : f.remainingBytes ~/ daysLeft;
+    final label = theme.textTheme.bodySmall?.copyWith(fontSize: 11, fontWeight: FontWeight.w700);
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Jatah hari ini',
-              style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Semantics(
+            label: 'Linimasa: hari ini, kuota habis ${formatDate(f.predictedEmptyAt!)}, '
+                'paket berakhir ${formatDate(f.mainExpiresAt)}',
+            excludeSemantics: true,
+            child: LayoutBuilder(
+              builder: (context, box) {
+                final x = box.maxWidth * at;
+                return SizedBox(
+                  height: 40,
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        top: 8,
+                        height: 8,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: AppColors.warningContainer,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: 0,
+                        top: 8,
+                        width: x,
+                        height: 8,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(4)),
+                        ),
+                      ),
+                      Positioned(left: 0, top: 22, child: Text('Hari ini', style: label?.copyWith(color: AppColors.textMuted))),
+                      Positioned(
+                        // Label tanggal habis di bawah titiknya, tanpa menabrak label ujung kiri dan kanan.
+                        left: (x - 40).clamp(56.0, math.max(56.0, box.maxWidth - 136)),
+                        top: 22,
+                        width: 80,
+                        child: Text(
+                          'Habis ${_short(f.predictedEmptyAt!)}',
+                          textAlign: TextAlign.center,
+                          style: label?.copyWith(color: AppColors.warning, fontWeight: FontWeight.w800),
+                        ),
+                      ),
+                      Positioned(
+                        right: 0,
+                        top: 22,
+                        child: Text(_short(f.mainExpiresAt), style: label?.copyWith(color: AppColors.textMuted)),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
-            CountUpText(value: budgetBytes, format: formatBytes, style: secondaryNumber),
-            const SizedBox(height: 8),
-            LinearProgressIndicator(
-              value: ratio,
-              minHeight: 8,
-              borderRadius: BorderRadius.circular(4),
-              backgroundColor: AppColors.neutralContainer,
-              color: over ? AppColors.danger : AppColors.primary,
-              // semanticsValue harus angka; keterangan lengkap dibacakan lewat label.
-              semanticsLabel:
-                  'Pemakaian hari ini ${formatBytes(usedTodayBytes)} dari jatah ${formatBytes(budgetBytes)}',
-            ),
-            const SizedBox(height: 8),
-            Text(
-              over
-                  ? 'Terpakai ${formatBytes(usedTodayBytes)}, lewat ${formatBytes(usedTodayBytes - budgetBytes)} dari jatah'
-                  : 'Terpakai ${formatBytes(usedTodayBytes)}, sisa ${formatBytes(budgetBytes - usedTodayBytes)}',
-              style: theme.textTheme.bodyMedium?.copyWith(color: over ? AppColors.danger : null),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            [
+              if (f.avgDailyBytes != null) 'Rata-rata pemakaianmu ${formatBytes(f.avgDailyBytes!)} per hari.',
+              if (safeDaily != null)
+                'Agar cukup sampai ${formatDate(f.mainExpiresAt)}, pakai paling banyak ${formatBytes(safeDaily)} per hari.',
+            ].join(' '),
+            style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+          ),
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: FilledButton(onPressed: () => context.push('/recommendations'), child: const Text('Lihat paket hemat')),
+          ),
+        ],
       ),
     );
   }
@@ -152,30 +226,6 @@ class RecommendationTeaser extends StatelessWidget {
           subtitle: Text('dengan $packageName'),
           trailing: const Icon(Icons.chevron_right),
           onTap: () => context.push('/recommendations'),
-        ),
-      ),
-    );
-  }
-}
-
-/// FR-2.4: saldo poin di beranda, ke layar Reward.
-class PointsTile extends StatelessWidget {
-  const PointsTile({super.key, required this.balance, required this.streak});
-
-  final int balance;
-  final int streak;
-
-  @override
-  Widget build(BuildContext context) {
-    return PressScale(
-      child: Card(
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          leading: const Icon(Icons.stars_outlined, color: AppColors.primary),
-          title: Text('$balance poin', style: const TextStyle(fontWeight: FontWeight.w700)),
-          subtitle: Text(streak > 0 ? '$streak hari hemat berturut-turut' : 'Hemat hari ini untuk dapat poin'),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => context.go('/rewards'),
         ),
       ),
     );
