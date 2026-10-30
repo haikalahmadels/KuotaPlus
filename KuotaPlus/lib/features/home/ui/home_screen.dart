@@ -3,10 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../app/widgets.dart';
 import '../../../core/format.dart';
 import '../../../core/api_client.dart';
+import '../../../core/models/alert.dart';
+import '../../../core/notifications.dart';
 import '../../../core/platform.dart';
 import '../../auth/providers.dart';
 import '../../rewards/providers.dart';
@@ -36,9 +39,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   /// FR-7.5: sync pemakaian saat aplikasi dibuka, lalu jadwal 6 jam. Izin belum ada → tawarkan sekali (FR-7.1).
   Future<void> _onAppOpened() async {
-    if (isAndroidApp) scheduleUsageSync();
+    if (isAndroidApp) {
+      scheduleUsageSync();
+      // FR-13.2: Android 13+ butuh izin untuk menampilkan notifikasi alert.
+      AlertNotifications.requestPermission();
+    }
 
-    final synced = await reportAndSyncUsage(ref.read(apiClientProvider));
+    final synced = await reportAndSyncUsage(ref.read(apiClientProvider)) != null;
     if (!mounted) return;
 
     if (synced) {
@@ -58,8 +65,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return ref.refresh(homeProvider.future);
   }
 
+  /// Alert baru dari GET /home (FR-13.2): notifikasi lokal di Android, banner di web.
+  /// Snapshot dari cache dilewati karena alert-nya sudah pernah ditampilkan.
+  void _surfaceAlerts(AsyncValue<HomeSnapshot>? _, AsyncValue<HomeSnapshot> next) {
+    final snapshot = next.value;
+    if (snapshot == null || snapshot.fromCache || snapshot.data.alerts.isEmpty) return;
+    if (isAndroidApp) {
+      AlertNotifications.show(snapshot.data.alerts);
+    } else {
+      ref.read(alertInboxProvider.notifier).add(snapshot.data.alerts);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    ref.listen(homeProvider, _surfaceAlerts);
     final home = ref.watch(homeProvider);
 
     return Scaffold(
@@ -98,6 +118,8 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
     final budget = data.dailyBudget;
 
     final blocks = <Widget>[
+      for (final alert in ref.watch(alertInboxProvider))
+        Padding(padding: const EdgeInsets.only(bottom: 12), child: _AlertBanner(alert)),
       if (snapshot.fromCache)
         const Padding(
           padding: EdgeInsets.only(bottom: 12),
@@ -212,6 +234,57 @@ class _Banner extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(child: Text(text, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.danger))),
         ],
+      ),
+    );
+  }
+}
+
+/// Banner alert di web (FR-13.2). Ketuk untuk membuka layar terkait; tombol tutup menghapusnya.
+class _AlertBanner extends ConsumerWidget {
+  const _AlertBanner(this.alert);
+
+  final Alert alert;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    // Status transaksi bersifat informasi; jenis lain adalah peringatan (kuning tua).
+    final warning = alert.kind != 'transaction_status';
+    final (Color bg, Color ink, IconData icon) = warning
+        ? (AppColors.warningContainer, AppColors.warning, Icons.warning_amber_rounded)
+        : (AppColors.primaryContainer, AppColors.primary, Icons.receipt_long_rounded);
+    void dismiss() => ref.read(alertInboxProvider.notifier).dismiss(alert.id);
+
+    return Material(
+      color: bg,
+      borderRadius: BorderRadius.circular(AppRadius.card),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        onTap: () {
+          dismiss();
+          openAlertTarget(GoRouter.of(context), alert.target);
+        },
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 4, 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(padding: const EdgeInsets.only(top: 2), child: Icon(icon, color: ink)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(alert.title, style: theme.textTheme.titleMedium?.copyWith(color: ink)),
+                    const SizedBox(height: 2),
+                    Text(alert.body, style: theme.textTheme.bodyMedium),
+                  ],
+                ),
+              ),
+              IconButton(tooltip: 'Tutup', onPressed: dismiss, icon: const Icon(Icons.close_rounded)),
+            ],
+          ),
+        ),
       ),
     );
   }

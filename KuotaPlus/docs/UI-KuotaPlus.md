@@ -294,6 +294,11 @@ Kartu prediksi, jatah harian, rekomendasi, dan poin ditambahkan di M5–M6.
 
 Blok muncul bertahap sekali (`EnterAnimation`); semua animasi mati saat "kurangi animasi".
 
+**Alert (M7, FR-13).** Alert baru dari `GET /home` dan `POST /usage/sync`:
+- Android: notifikasi lokal (channel "Peringatan kuota"); izin notifikasi diminta saat beranda dibuka. Mengetuknya membuka `target` (tab dengan `go`, layar lain di-`push` agar ada tombol kembali), juga saat aplikasi dibuka dari notifikasi.
+- Web: banner di paling atas beranda, kuning tua untuk peringatan dan biru untuk status transaksi. Ketuk = buka `target`, tombol tutup = hapus. Banner bertahan selama sesi dan dikosongkan saat keluar akun.
+- Snapshot beranda dari cache offline tidak memunculkan alert lagi.
+
 ### S05 Katalog paket (M2)
 
 ```

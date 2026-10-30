@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Domain\UsageProfiles;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ForecastResource;
+use App\Services\AlertService;
 use App\Services\DemoDataService;
 use App\Services\ForecastService;
 use App\Services\UsageSummaryService;
@@ -15,8 +16,8 @@ use Illuminate\Validation\Rule;
 
 class UsageController extends Controller
 {
-    /** POST /usage/sync (FR-7). Prediksi dihitung ulang setelah setiap sync (FR-9.6). alerts diisi di M7. */
-    public function sync(Request $request, UsageSyncService $sync, ForecastService $forecasts): JsonResponse
+    /** POST /usage/sync (FR-7). Prediksi dihitung ulang setelah setiap sync (FR-9.6), lalu alert dievaluasi (FR-13). */
+    public function sync(Request $request, UsageSyncService $sync, ForecastService $forecasts, AlertService $alerts): JsonResponse
     {
         $validated = $request->validate([
             'buckets' => ['present', 'array', 'max:2100'],
@@ -30,7 +31,7 @@ class UsageController extends Controller
 
         return response()->json(['data' => $result + [
             'forecast' => $this->forecast($request, $forecasts),
-            'alerts' => [],
+            'alerts' => $alerts->collect($request->user()),
         ]]);
     }
 

@@ -91,6 +91,13 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
+const _tabRoots = {'/home', '/packages', '/usage', '/rewards', '/history'};
+
+/// Deep link alert (FR-13.3): tab dibuka dengan go; layar lain ditumpuk supaya ada tombol kembali.
+/// Belum login → redirect ke login lalu kembali ke target.
+void openAlertTarget(GoRouter router, String target) =>
+    _tabRoots.contains(target) ? router.go(target) : router.push(target);
+
 StatefulShellBranch _tab(String path, Widget screen) => StatefulShellBranch(
       routes: [GoRoute(path: path, builder: (context, state) => screen)],
     );

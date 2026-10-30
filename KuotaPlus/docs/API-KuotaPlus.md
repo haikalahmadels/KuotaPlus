@@ -190,12 +190,21 @@ Peringatan yang sudah lolos aturan 1 per jenis per hari (tabel `notifications`).
   "kind": "forecast_risk",
   "title": "Kuota diprediksi habis lebih cepat",
   "body": "Kuotamu diperkirakan habis 3 Nov, 6 hari sebelum paket berakhir.",
-  "target": "/analysis",
+  "target": "/usage",
   "created_at": "2026-10-29T14:05:00+07:00"
 }
 ```
 
 `kind`: `quota_low` | `forecast_risk` | `package_expiring` | `card_expiring` | `transaction_status` | `quota_received`. `target` adalah route Flutter untuk deep link (FR-13.3).
+
+| `kind` | Pemicu (FR-13.1) | `target` |
+| --- | --- | --- |
+| `quota_low` | Sisa kuota utama semua paket ≤ 20% | `/recommendations` |
+| `forecast_risk` | Prediksi berubah menjadi Berisiko. Sekali per episode berisiko: tidak diulang selama prediksi tetap berisiko | `/usage` |
+| `package_expiring` | Paket berakhir ≤ 1 hari lagi | `/packages` |
+| `card_expiring` | Nomor `active` dengan masa aktif ≤ 3 hari | `/topup` |
+| `transaction_status` | Transaksi non-pulsa menjadi `paid`/`failed`/`expired` hari ini (pulsa langsung selesai, jadi tidak berubah status) | `/history/{id}` |
+| `quota_received` | Menerima kuota dari pengguna lain (M8) | `/home` |
 
 ### `Transaction`
 

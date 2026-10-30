@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ForecastResource;
 use App\Http\Resources\SubscriberResource;
 use App\Http\Resources\SubscriptionResource;
+use App\Services\AlertService;
 use App\Services\ForecastService;
 use App\Services\RecommendationService;
 use Illuminate\Http\JsonResponse;
@@ -15,9 +16,14 @@ use Illuminate\Http\Response;
 class HomeController extends Controller
 {
     /**
-     * GET /home (FR-2, FR-9, FR-10). alerts diisi di M7.
+     * GET /home (FR-2, FR-9, FR-10, FR-13).
      */
-    public function show(Request $request, ForecastService $forecasts, RecommendationService $recommendations): JsonResponse
+    public function show(
+        Request $request,
+        ForecastService $forecasts,
+        RecommendationService $recommendations,
+        AlertService $alerts,
+    ): JsonResponse
     {
         $user = $request->user();
         $subscriber = $user->subscriber;
@@ -54,7 +60,7 @@ class HomeController extends Controller
                 'source' => $latestUsage?->source,
                 'last_synced_at' => $latestUsage?->synced_at->toIso8601String(),
             ],
-            'alerts' => [],
+            'alerts' => $alerts->collect($user),
         ]]);
     }
 

@@ -5,6 +5,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'app/router.dart';
 import 'app/theme.dart';
 import 'core/api_client.dart';
+import 'core/notifications.dart';
 import 'core/session.dart';
 import 'core/token_storage.dart';
 
@@ -27,11 +28,31 @@ Future<void> main() async {
   ));
 }
 
-class KuotaPlusApp extends ConsumerWidget {
+class KuotaPlusApp extends ConsumerStatefulWidget {
   const KuotaPlusApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<KuotaPlusApp> createState() => _KuotaPlusAppState();
+}
+
+class _KuotaPlusAppState extends ConsumerState<KuotaPlusApp> {
+  @override
+  void initState() {
+    super.initState();
+    _initNotifications();
+  }
+
+  /// FR-13.3: notifikasi yang diketuk membuka `target`, baik saat aplikasi berjalan maupun saat membukanya.
+  Future<void> _initNotifications() async {
+    void open(String target) => openAlertTarget(ref.read(routerProvider), target);
+
+    await AlertNotifications.init(onTap: open);
+    final launched = await AlertNotifications.launchTarget();
+    if (launched != null && mounted) WidgetsBinding.instance.addPostFrameCallback((_) => open(launched));
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'Kuota+',
       theme: buildTheme(),

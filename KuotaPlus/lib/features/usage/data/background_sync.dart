@@ -16,6 +16,7 @@ void usageSyncDispatcher() {
     final tokens = TokenStorage();
     if (await tokens.read() == null) return true; // belum login: tidak ada yang dikirim
 
+    // FR-13.2: alert hasil sync latar belakang tampil sebagai notifikasi lokal di dalam fungsi ini.
     await reportAndSyncUsage(ApiClient(tokens));
     return true;
   });

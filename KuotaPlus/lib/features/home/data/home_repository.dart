@@ -4,11 +4,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/api_client.dart';
 import '../../../core/api_exception.dart';
+import '../../../core/models/alert.dart';
 import '../../../core/models/forecast.dart';
 import '../../../core/models/subscriber.dart';
 import '../../../core/models/subscription.dart';
 
-/// Isi `GET /home`. Alert ditambahkan di M7.
+/// Isi `GET /home`, termasuk alert FR-13.
 class HomeData {
   const HomeData({
     required this.serverTime,
@@ -18,6 +19,7 @@ class HomeData {
     this.dailyBudget,
     this.teaser,
     this.points = (balance: 0, streak: 0),
+    this.alerts = const [],
   });
 
   factory HomeData.fromJson(Map<String, dynamic> json) {
@@ -35,6 +37,7 @@ class HomeData {
           ? null
           : (budgetBytes: budget['budget_bytes'] as int, usedTodayBytes: budget['used_today_bytes'] as int),
       points: (balance: json['points']['balance'] as int, streak: json['points']['streak'] as int),
+      alerts: Alert.listFromJson(json['alerts']),
       teaser: teaser == null
           ? null
           : (
@@ -58,6 +61,9 @@ class HomeData {
 
   /// Saldo poin dan streak hari hemat (FR-2.4).
   final ({int balance, int streak}) points;
+
+  /// Alert baru (FR-13). Diabaikan jika snapshot berasal dari cache, karena sudah pernah ditampilkan.
+  final List<Alert> alerts;
 }
 
 class HomeSnapshot {
