@@ -326,3 +326,70 @@ class SmoothSize extends StatelessWidget {
     );
   }
 }
+
+/// Kepala layar di luar tab: tombol kembali bulat + judul + keterangan opsional (mockup M10).
+class BackHeader extends StatelessWidget {
+  const BackHeader({super.key, required this.title, this.subtitle});
+
+  final String title;
+  final String? subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
+      child: Row(
+        children: [
+          Material(
+            color: AppColors.surface,
+            shape: const CircleBorder(),
+            child: IconButton(
+              tooltip: 'Kembali',
+              onPressed: () => Navigator.of(context).maybePop(),
+              icon: const Icon(Icons.arrow_back_rounded, color: AppColors.text),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
+                if (subtitle != null)
+                  Text(subtitle!, style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.textMuted)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Kartu utama layar (#EAF0FF, sudut 32) atau kartu biasa putih (sudut 24), dipisah dari latar oleh warna, tanpa garis.
+class Panel extends StatelessWidget {
+  const Panel({super.key, required this.child, this.hero = false, this.color, this.padding});
+
+  final Widget child;
+  final bool hero;
+  final Color? color;
+  final EdgeInsetsGeometry? padding;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: padding ?? EdgeInsets.all(hero ? 20 : 16),
+      decoration: BoxDecoration(
+        color: color ?? (hero ? AppColors.primaryContainer : AppColors.surface),
+        borderRadius: BorderRadius.circular(hero ? AppRadius.hero : AppRadius.card),
+      ),
+      child: child,
+    );
+  }
+}
+
+/// Garis tipis antar-baris di dalam satu Panel.
+const rowDivider = Divider(height: 1, thickness: 1, color: Color(0xFFF1F2F4));

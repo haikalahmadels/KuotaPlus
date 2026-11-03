@@ -42,3 +42,16 @@ String formatDate(DateTime time) => DateFormat('d MMM yyyy', 'id_ID').format(toW
 
 /// "29 Okt 2026, 14.05".
 String formatDateTime(DateTime time) => DateFormat('d MMM yyyy, HH.mm', 'id_ID').format(toWib(time));
+
+/// "14.05" (WIB).
+String formatTime(DateTime time) => DateFormat('HH.mm', 'id_ID').format(toWib(time));
+
+/// Label kelompok hari di riwayat: "Hari ini", "Kemarin", atau "Selasa, 28 Okt" (WIB).
+String formatDayLabel(DateTime time, DateTime now) {
+  final day = toWib(time);
+  final today = toWib(now);
+  final diff = DateTime(today.year, today.month, today.day).difference(DateTime(day.year, day.month, day.day)).inDays;
+  if (diff == 0) return 'Hari ini';
+  if (diff == 1) return 'Kemarin';
+  return DateFormat(day.year == today.year ? 'EEEE, d MMM' : 'd MMM yyyy', 'id_ID').format(day);
+}
