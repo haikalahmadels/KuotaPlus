@@ -30,7 +30,7 @@ Simulator ──(POST /api/payments/callback, X-Signature HMAC)──▶ Laravel
 | MySQL | 8.4.3 (Laragon) | Database `kuotaplus` dan `kuotaplus_test` |
 | Composer | 2.10 | |
 | Laravel | Versi stabil terbaru yang mendukung PHP 8.3 | Versi persis dikunci oleh `composer.lock` saat `composer create-project` |
-| Filament | Versi stabil terbaru yang kompatibel dengan Laravel di atas | |
+| Filament | 5.x (dipasang di M9) | |
 | Flutter | 3.47.2 stable | |
 
 ## Struktur repositori
@@ -175,6 +175,10 @@ Alert FR-13 tidak punya job sendiri. `AlertService` dipanggil di akhir `GET /hom
 - **Audit log:** satu observer yang dipasang pada model yang bisa diubah admin (Package, App, Setting). Observer menulis `admin_audit_logs` hanya jika `auth('admin')->check()`, sehingga seeder dan aplikasi tidak ikut tercatat.
 - **Privasi (FR-15.8):** resource Subscriber tidak punya relasi ke `usage_records` per aplikasi. Statistik per aplikasi hanya muncul di widget dashboard sebagai agregat.
 - `catalog_updated_at` disimpan di `settings` dengan key `catalog.updated_at`. Key ini ditandai `is_system` dan disembunyikan dari form pengaturan.
+- Aturan dijaga di **model**, bukan hanya di form, supaya berlaku dari jalur mana pun: `Package` menolak penghapusan paket yang pernah dibeli (`PACKAGE_PURCHASED`) dan memperbarui `catalog.updated_at` setiap disimpan; `Setting` menolak nilai di luar `min`/`max`; `AdminAuditLog` menolak update dan delete.
+- Form paket mengisi kuota dalam MB (disimpan dalam byte). Form pengaturan menampilkan satu field per key: angka dengan rentang, atau tabel untuk `topup.options`.
+- Dashboard: `MetricsOverview` (transaksi hari ini dan 30 hari, pendapatan bersih, diskon poin, poin beredar dan nilai rupiahnya, kuota dibagikan, % pembelian dari rekomendasi, % Usage Access Android, aplikasi paling boros secara agregat) dan `DailyTransactionsChart`.
+- Bukti: `tests/Feature/AdminPanelTest.php` (akses, semua halaman panel dirender, rentang setting, paket terbeli, harga dan setting reward terlihat di API, audit log).
 
 ### Akses dari HP dan web
 
