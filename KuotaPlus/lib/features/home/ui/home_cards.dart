@@ -15,6 +15,7 @@ import '../../../core/models/subscription.dart';
 import '../../rewards/data/rewards_repository.dart';
 import '../../rewards/providers.dart';
 import '../../usage/providers.dart';
+import '../../usage/ui/app_logo.dart';
 
 /// Kartu utama beranda, tampilan "Paket aktif" (mockup G revisi): tangki berombak setinggi sisa kuota utama,
 /// kuota aplikasi di bawah angka utama, lalu sisa pulsa dan masa aktif nomor di dasar kartu.
@@ -567,18 +568,7 @@ class TodayApps extends ConsumerWidget {
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(color: _accents[i].tint, borderRadius: BorderRadius.circular(12)),
-                      child: ExcludeSemantics(
-                        child: Text(app.label.characters.first.toUpperCase(), style: TextStyle(
-                          color: _accents[i].ink,
-                          fontWeight: FontWeight.w800,
-                        )),
-                      ),
-                    ),
+                    AppLogo(packageName: app.packageName, label: app.label, category: app.category),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(

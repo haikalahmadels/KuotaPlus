@@ -6,6 +6,9 @@ import android.app.usage.NetworkStatsManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import java.io.ByteArrayOutputStream
 import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Process
@@ -41,6 +44,17 @@ class UsageStatsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 context.startActivity(intent)
                 result.success(null)
+            }
+            "getAppIcon" -> {
+                val packageName = call.argument<String>("packageName")
+                if (packageName == null) {
+                    result.success(null)
+                    return
+                }
+                Thread {
+                    val png = runCatching { appIconPng(packageName, call.argument<Int>("size") ?: 96) }.getOrNull()
+                    android.os.Handler(android.os.Looper.getMainLooper()).post { result.success(png) }
+                }.start()
             }
             "queryDailyMobileUsage" -> {
                 if (!hasUsageAccess()) {
@@ -135,5 +149,21 @@ class UsageStatsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             packageName
         }
         return packageName to label
+    }
+
+    /** Logo asli aplikasi yang terpasang sebagai PNG, null jika aplikasi tidak ada (mis. sudah dihapus). */
+    private fun appIconPng(packageName: String, size: Int): ByteArray? {
+        val drawable = try {
+            context.packageManager.getApplicationIcon(packageName)
+        } catch (e: PackageManager.NameNotFoundException) {
+            return null
+        }
+        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        drawable.setBounds(0, 0, size, size)
+        drawable.draw(Canvas(bitmap))
+        return ByteArrayOutputStream().use { out ->
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+            out.toByteArray()
+        }
     }
 }

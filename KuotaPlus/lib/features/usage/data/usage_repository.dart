@@ -5,6 +5,7 @@ import '../../../core/format.dart';
 class AppUsage {
   const AppUsage({
     required this.appId,
+    this.packageName,
     required this.label,
     required this.category,
     required this.bytes,
@@ -13,6 +14,7 @@ class AppUsage {
 
   factory AppUsage.fromJson(Map<String, dynamic> json) => AppUsage(
         appId: json['app_id'] as int?,
+        packageName: json['package_name'] as String?,
         label: json['label'] as String,
         category: json['category'] as String?,
         bytes: json['bytes'] as int,
@@ -20,6 +22,9 @@ class AppUsage {
       );
 
   final int? appId;
+
+  /// Untuk logo aplikasi; null untuk "Lainnya".
+  final String? packageName;
   final String label;
   final String? category;
   final int bytes;
@@ -88,6 +93,7 @@ class UsageSummary {
 /// `GET /usage/apps/{id}`.
 class AppUsageDetail {
   const AppUsageDetail({
+    this.packageName,
     required this.label,
     required this.category,
     required this.totalBytes,
@@ -96,6 +102,7 @@ class AppUsageDetail {
   });
 
   factory AppUsageDetail.fromJson(Map<String, dynamic> json) => AppUsageDetail(
+        packageName: json['app']['package_name'] as String?,
         label: json['app']['label'] as String,
         category: json['app']['category'] as String,
         totalBytes: json['total_bytes'] as int,
@@ -103,6 +110,7 @@ class AppUsageDetail {
         daily: [for (final d in json['daily'] as List) DailyUsage.fromJson(d as Map<String, dynamic>)],
       );
 
+  final String? packageName;
   final String label;
   final String category;
   final int totalBytes;

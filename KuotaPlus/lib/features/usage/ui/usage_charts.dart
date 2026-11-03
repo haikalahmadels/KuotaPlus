@@ -23,40 +23,58 @@ const categoryIcons = {
   'sistem': Icons.settings_suggest_outlined,
 };
 
-/// Donut top 5 + Lainnya (FR-8.2).
+/// Donut top 5 + Lainnya (FR-8.2). [selected] menyorot satu irisan; yang lain meredup.
 class UsageDonut extends StatelessWidget {
-  const UsageDonut({super.key, required this.apps, required this.totalBytes});
+  const UsageDonut({super.key, required this.apps, required this.totalBytes, this.selected, this.size = 200});
 
   final List<AppUsage> apps;
   final int totalBytes;
+  final int? selected;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final focus = selected == null ? null : apps[selected!];
 
     return Semantics(
       label: 'Diagram pemakaian: ${apps.map((a) => '${a.label} ${a.percent}%').join(', ')}',
-      child: SizedBox(
-        height: 200,
+      child: SizedBox.square(
+        dimension: size,
         child: Stack(
           alignment: Alignment.center,
           children: [
             PieChart(
+              duration: Motion.of(context, Motion.enter),
+              curve: Motion.enterCurve,
               PieChartData(
                 startDegreeOffset: -90,
-                centerSpaceRadius: 64,
+                centerSpaceRadius: size * 0.32,
                 sectionsSpace: 2, // celah 2px warna permukaan antar irisan
                 sections: [
                   for (final (i, app) in apps.indexed)
-                    PieChartSectionData(value: app.bytes.toDouble(), color: usageColor(app, i), radius: 28, showTitle: false),
+                    PieChartSectionData(
+                      value: app.bytes.toDouble(),
+                      color: usageColor(app, i).withValues(alpha: selected == null || selected == i ? 1 : 0.25),
+                      radius: size * (selected == i ? 0.17 : 0.14),
+                      showTitle: false,
+                    ),
                 ],
               ),
             ),
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(formatBytes(totalBytes), style: theme.textTheme.titleLarge),
-                Text('total', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                Text(
+                  focus == null ? formatBytes(totalBytes) : '${focus.percent.round()}%',
+                  style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+                ),
+                Text(
+                  focus?.label ?? 'total',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                ),
               ],
             ),
           ],
@@ -67,7 +85,7 @@ class UsageDonut extends StatelessWidget {
 }
 
 /// Bar pemakaian harian (FR-8.3) dengan garis putus-putus jatah harian saat ini sebagai pembanding.
-/// Hari lonjakan diberi warna peringatan.
+/// Dengan jatah: hari yang lewat jatah merah (boros). Tanpa jatah: hari lonjakan kuning tua.
 class DailyUsageChart extends StatelessWidget {
   const DailyUsageChart({super.key, required this.daily, this.budgetBytes});
 
@@ -96,7 +114,7 @@ class DailyUsageChart extends StatelessWidget {
               if (budgetMb != null)
                 HorizontalLine(
                   y: budgetMb,
-                  color: AppColors.text,
+                  color: AppColors.warning,
                   strokeWidth: 2,
                   dashArray: const [6, 4],
                   label: HorizontalLineLabel(
@@ -147,7 +165,8 @@ class DailyUsageChart extends StatelessWidget {
                 getTooltipItem: (group, groupIndex, rod, rodIndex) {
                   final day = daily[group.x];
                   return BarTooltipItem(
-                    '${formatDate(day.date)}\n${formatBytes(day.bytes)}${day.isSpike ? '\nLonjakan' : ''}',
+                    '${formatDate(day.date)}\n${formatBytes(day.bytes)}'
+                    '${budgetBytes != null && day.bytes > budgetBytes! ? '\nLewat jatah' : day.isSpike ? '\nLonjakan' : ''}',
                     const TextStyle(color: Colors.white, fontSize: 12),
                   );
                 },
@@ -159,8 +178,10 @@ class DailyUsageChart extends StatelessWidget {
                   BarChartRodData(
                     toY: day.bytes / _mb,
                     width: dense ? 6 : 16,
-                    color: day.isSpike ? AppColors.warning : AppColors.primary,
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                    color: budgetBytes != null
+                        ? (day.bytes > budgetBytes! ? AppColors.danger : AppColors.primary)
+                        : (day.isSpike ? AppColors.warning : AppColors.primary),
+                    borderRadius: BorderRadius.circular(dense ? 3 : 6),
                   ),
                 ]),
             ],

@@ -5,6 +5,7 @@ import '../../../app/widgets.dart';
 import '../../../core/format.dart';
 import '../data/usage_repository.dart';
 import '../providers.dart';
+import 'app_logo.dart';
 import 'usage_charts.dart';
 
 final _appUsageProvider = FutureProvider.autoDispose.family<AppUsageDetail, (int, String)>(
@@ -60,9 +61,17 @@ class _Detail extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(categoryIcons[detail.category] ?? Icons.apps),
-            const SizedBox(width: 8),
-            Text('Kategori ${detail.category}', style: muted),
+            AppLogo(packageName: detail.packageName, label: detail.label, category: detail.category, size: 48),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(detail.label, style: theme.textTheme.titleLarge),
+                  Text('Kategori ${detail.category}', style: muted),
+                ],
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 12),

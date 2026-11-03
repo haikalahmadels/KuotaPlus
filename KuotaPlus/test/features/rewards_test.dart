@@ -7,9 +7,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:kuota_plus/app/theme.dart';
 import 'package:kuota_plus/features/packages/data/catalog_repository.dart';
+import 'package:kuota_plus/features/packages/providers.dart';
 import 'package:kuota_plus/features/rewards/data/rewards_repository.dart';
 import 'package:kuota_plus/features/rewards/providers.dart';
 import 'package:kuota_plus/features/rewards/ui/rewards_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   setUpAll(() => initializeDateFormatting('id_ID'));
@@ -44,19 +46,52 @@ void main() {
 
   testWidgets('layar Reward menampilkan saldo, kalender, dan legenda', (tester) async {
     // Layar HP tinggi supaya seluruh isi ListView dirender.
-    tester.view.physicalSize = const Size(1080, 3000);
+    tester.view.physicalSize = const Size(1080, 6000);
     tester.view.devicePixelRatio = 2.5;
     addTearDown(tester.view.reset);
 
+    SharedPreferences.setMockInitialValues({});
+    final ledger = LedgerPage([
+      LedgerEntry(delta: 10, description: 'Hari hemat 29 Okt', createdAt: DateTime(2026, 10, 30)),
+      LedgerEntry(delta: -200, description: 'Bagi kuota 1 GB', createdAt: DateTime(2026, 10, 25)),
+    ], hasMore: false);
+
     await tester.pumpWidget(ProviderScope(
-      overrides: [pointsProvider.overrideWith((ref) async => points)],
-      child: MaterialApp(theme: buildTheme(), home: const RewardsScreen()),
+      overrides: [
+        pointsProvider.overrideWith((ref) async => points),
+        rewardsRepositoryProvider.overrideWithValue(_FakeRewards(ledger)),
+        packagesProvider.overrideWith((ref) async => Catalog(const [], rules(520))),
+      ],
+      // Maskot bergerak terus (idle); dengan "kurangi animasi" layar diam dan tes bisa settle.
+      child: MaterialApp(
+        theme: buildTheme(),
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(disableAnimations: true),
+          child: child!,
+        ),
+        home: const RewardsScreen(),
+      ),
     ));
     await tester.pumpAndSettle();
+
+    expect(find.text('bernilai Rp5.200 diskon'), findsOneWidget);
+    expect(find.text('−200'), findsOneWidget);
 
     expect(find.text('520'), findsOneWidget);
     expect(find.text('Tidak ada data'), findsOneWidget);
     expect(find.textContaining('poin kedaluwarsa mulai'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+}
+
+class _FakeRewards implements RewardsRepository {
+  _FakeRewards(this.page);
+
+  final LedgerPage page;
+
+  @override
+  Future<LedgerPage> ledger({int page = 1}) async => this.page;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

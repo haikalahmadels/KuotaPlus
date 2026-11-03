@@ -16,4 +16,8 @@ abstract final class UsageStats {
     final result = await _channel.invokeListMethod<Map<Object?, Object?>>('queryDailyMobileUsage', {'days': days});
     return [for (final bucket in result ?? const []) bucket.cast<String, Object>()];
   }
+
+  /// Logo asli aplikasi yang terpasang (PNG [size]×[size] px), null jika aplikasi tidak terpasang.
+  static Future<Uint8List?> getAppIcon(String packageName, {int size = 96}) =>
+      _channel.invokeMethod<Uint8List>('getAppIcon', {'packageName': packageName, 'size': size});
 }
