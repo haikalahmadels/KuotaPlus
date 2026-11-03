@@ -161,7 +161,12 @@ class ActiveQuotaCard extends StatelessWidget {
                   Positioned.fill(
                     child: _WaterTank(
                       level: 0.44 + ratio * 0.235,
-                      mood: subs.isEmpty || exhausted ? MascotMood.sleepy : MascotMood.wave,
+                      mood: subs.isEmpty || exhausted
+                          ? MascotMood.sleepy
+                          // shortcut: sama dengan bawaan notify.quota_low_percent (20%), belum dibaca dari server.
+                          : ratio <= 0.2
+                              ? MascotMood.worried
+                              : MascotMood.wave,
                     ),
                   ),
                   Positioned(left: 12, right: 12, bottom: 12, child: info),

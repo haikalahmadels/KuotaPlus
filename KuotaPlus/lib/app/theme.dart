@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 
 /// Design token dari docs/UI-KuotaPlus.md.
@@ -193,6 +194,16 @@ ThemeData buildTheme() {
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(minimumSize: buttonSize, shape: controlShape, textStyle: buttonText),
     ),
+    // Transisi antarlayar M3 (pudar + geser maju) yang mati saat "kurangi gerakan" aktif.
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android: _MotionAwareTransitions(FadeForwardsPageTransitionsBuilder()),
+        TargetPlatform.iOS: _MotionAwareTransitions(CupertinoPageTransitionsBuilder()),
+        TargetPlatform.windows: _MotionAwareTransitions(FadeForwardsPageTransitionsBuilder()),
+        TargetPlatform.linux: _MotionAwareTransitions(FadeForwardsPageTransitionsBuilder()),
+        TargetPlatform.macOS: _MotionAwareTransitions(FadeForwardsPageTransitionsBuilder()),
+      },
+    ),
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.control)),
@@ -219,4 +230,21 @@ ThemeData buildTheme() {
       ),
     ),
   );
+}
+
+/// Membungkus transisi bawaan: saat [Motion.reduced] layar baru langsung tampil tanpa gerak.
+class _MotionAwareTransitions extends PageTransitionsBuilder {
+  const _MotionAwareTransitions(this.inner);
+
+  final PageTransitionsBuilder inner;
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) =>
+      Motion.reduced(context) ? child : inner.buildTransitions(route, context, animation, secondaryAnimation, child);
 }

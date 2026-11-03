@@ -94,6 +94,8 @@ Motion adalah umpan balik, bukan pertunjukan: paling banyak 1–2 elemen bergera
 | Memuat | Skeleton abu-abu seukuran nilai, diam (tanpa shimmer) | `SkeletonCardList`, `SkeletonBox` |
 | Bayar berhasil | Kuo merayakan sekali (± 1,5 detik) + `HapticFeedback.mediumImpact()` | `Mascot(celebrate)` |
 | Bayar gagal / kedaluwarsa | Instan, tanpa goyangan, tanpa maskot | Ikon + pesan + tombol |
+| Pindah layar | Pudar + geser maju bawaan M3 (Android), geser iOS | `pageTransitionsTheme` di `buildTheme` |
+| Pindah tab | Isi tab memudar masuk dan naik sedikit, `Motion.enter`; state tab tetap | `_TabFade` di `shell.dart` |
 
 **Kurangi animasi.** `Motion.reduced(context)` bernilai true jika `disableAnimations` atau `accessibleNavigation` aktif. Saat itu semua durasi jadi nol dan maskot diam di pose akhirnya; perubahan teks dan warna tetap terjadi. Catatan: "Reduce Motion" iOS tidak menyalakan `disableAnimations`.
 
@@ -104,7 +106,7 @@ Kuo adalah karakter bulat berwarna `primary` dengan antena sinyal, digambar deng
 | Ekspresi | Kapan | Tempat |
 | --- | --- | --- |
 | `wave` | Menyapa | Login (S01), kartu Paket aktif, tangki Hari ini |
-| `worried` | Jatah hari ini terlewati | Tangki "Hari ini" di beranda, Kuo mengapung di dasar |
+| `worried` | Jatah hari ini terlewati; sisa kuota utama ≤ 20% (sama dengan `notify.quota_low_percent` bawaan) | Tangki "Hari ini" di beranda (Kuo mengapung di dasar); tangki kartu Paket aktif |
 | `sleepy` | Kuota habis, tidak punya paket | Beranda, dengan tombol "Lihat paket". Nada tenang, tidak memarahi |
 | `celebrate` | Pembayaran berhasil | S08 hasil `paid`, sekali saja |
 | `rest` | Daftar kosong | `EmptyState`: Kuo + satu kalimat + satu tombol |
