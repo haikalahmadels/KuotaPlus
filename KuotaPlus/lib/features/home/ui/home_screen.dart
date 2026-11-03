@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -86,7 +87,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: SafeArea(
         bottom: false,
         child: switch (home) {
-          AsyncData(:final value) => RefreshIndicator(onRefresh: _refresh, child: _HomeContent(value)),
+          AsyncData(:final value) => RefreshIndicator(onRefresh: _refresh, child: _HomeContent(value..markShown())),
           AsyncError(:final error) => ErrorRetry(error: error, onRetry: () => ref.invalidate(homeProvider)),
           _ => const SkeletonCardList(),
         },
@@ -287,5 +288,20 @@ class _AlertBanner extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+/// Penanda untuk DoD "beranda tampil ≤ 2 detik": satu baris log saat frame pertama berisi data beranda
+/// tergambar. Selisihnya dengan "Start proc" di logcat = waktu dari ketuk ikon sampai beranda terisi.
+/// Tidak dicetak di build rilis.
+bool _homeShownLogged = false;
+
+extension on HomeSnapshot {
+  HomeSnapshot markShown() {
+    if (!kReleaseMode && !_homeShownLogged) {
+      _homeShownLogged = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) => debugPrint('KuotaPlus: beranda tampil (cache: $fromCache)'));
+    }
+    return this;
   }
 }

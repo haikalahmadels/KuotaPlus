@@ -1,0 +1,18 @@
+endpoint (server, Telescope)                 n  median     p95    maks
+GET /api/home                               15      99     121     127
+GET /api/packages                           16      90     120     145
+GET /api/points                             15      78      98     105
+GET /api/points/ledger                      15      77     107     201
+GET /api/quota-transfers                    15      74      92      97
+GET /api/quota-transfers/quote              15      87     109     168
+GET /api/recommendations                    15      82      96      98
+GET /api/topup-options                      15      66      83      96
+GET /api/transactions                       15      74      97     112
+GET /api/transactions/{id}                   1      78      78      78
+GET /api/usage/apps/{id}                    15      70      92     176
+GET /api/usage/summary                      31      99     124     189
+POST /api/auth/otp/request                   1     341     341     341
+POST /api/auth/otp/verify                    1     297     297     297
+POST /api/transactions                       1      84      84      84
+
+Semua request API: n=186, p95 server = 124 ms, maks = 341 ms

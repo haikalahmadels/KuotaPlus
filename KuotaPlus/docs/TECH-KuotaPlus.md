@@ -186,6 +186,8 @@ Alert FR-13 tidak punya job sendiri. `AlertService` dipanggil di akhir `GET /hom
 - Apache Laragon mendengarkan di `0.0.0.0:80` secara bawaan. Izinkan port 80 di Windows Firewall untuk jaringan privat.
 - `APP_URL` diisi IP LAN laptop (misalnya `http://192.168.1.5`), karena URL simulator yang dikirim ke HP dibentuk dari `APP_URL`.
 - `config/cors.php`: `allowed_origins` = `http://localhost:5000`. Flutter Web selalu dijalankan dengan `--web-port 5000`.
+- **OPcache wajib aktif** di `C:\laragon\bin\php\php-8.3.33-Win32-vs16-x64\php.ini`: `zend_extension=opcache`, `opcache.enable=1`, `opcache.memory_consumption=256`, `opcache.max_accelerated_files=20000` (`validate_timestamps` tetap 1), lalu restart Apache. Tanpa OPcache setiap request ±500 ms dan DoD p95 gagal ([bukti](bukti/performa.md)).
+- APK untuk HP selalu dibangun dengan alamat laptop: `flutter build apk --dart-define-from-file=env/device.json`. Tanpa itu aplikasi memanggil `http://localhost` dan tidak bisa terhubung.
 - Jika IP laptop berubah (ganti Wi-Fi), yang perlu diubah hanya `APP_URL` di `.env` dan file define Flutter.
 
 ### Test

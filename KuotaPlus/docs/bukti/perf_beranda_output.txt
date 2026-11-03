@@ -1,0 +1,5 @@
+buka 1: frame pertama TotalTime:825 ms | ketuk ikon -> beranda berisi data: 1032 ms cache: false)
+buka 2: frame pertama TotalTime:645 ms | ketuk ikon -> beranda berisi data: 872 ms cache: false)
+buka 3: frame pertama TotalTime:751 ms | ketuk ikon -> beranda berisi data: 949 ms cache: false)
+buka 4: frame pertama TotalTime:682 ms | ketuk ikon -> beranda berisi data: 911 ms cache: false)
+buka 5: frame pertama TotalTime:734 ms | ketuk ikon -> beranda berisi data: 980 ms cache: false)

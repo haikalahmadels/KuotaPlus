@@ -1,0 +1,18 @@
+endpoint                                 n   median      p95     maks
+/home                                   15      123      154      158
+/packages                               15      113      154      160
+/usage/summary?period=7d                15      112      200      201
+/usage/summary?period=30d               15      132      152      154
+/recommendations                        15       96      115      126
+/points                                 15      108      137      138
+/points/ledger                          15       98      121      228
+/transactions                           15       95      112      135
+/topup-options                          15       86      111      123
+/quota-transfers                        15       94      110      129
+/quota-transfers/quote                  15      119      151      185
+/usage/apps/6                           15       93      129      190
+POST /transactions                       1      114      114      114
+/transactions/{id}                       1      101      101      101
+
+Semua request: n=182, p95 klien = 154 ms, maks = 228 ms
+Error: tidak ada
