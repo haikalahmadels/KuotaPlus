@@ -21,6 +21,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->throttleApi();
+        // Tidak ada route "login" untuk pelanggan: tamu di /api/* langsung 401 JSON, bukan redirect (yang jadi 500).
+        // Panel admin memakai middleware login Filament sendiri.
+        $middleware->redirectGuestsTo(fn (Request $request) => $request->is('api/*') ? null : '/admin/login');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

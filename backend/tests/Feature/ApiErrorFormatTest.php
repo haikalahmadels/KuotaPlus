@@ -51,6 +51,14 @@ class ApiErrorFormatTest extends TestCase
             ->assertJsonPath('code', 'UNAUTHENTICATED');
     }
 
+    public function test_unauthenticated_without_json_accept_header_still_returns_401(): void
+    {
+        // Tanpa Accept: application/json middleware auth dulu mencoba redirect ke route "login" yang tidak ada (500).
+        $this->get('/api/home')
+            ->assertStatus(401)
+            ->assertJson(['code' => 'UNAUTHENTICATED']);
+    }
+
     public function test_server_error_hides_details(): void
     {
         config(['app.debug' => false]);
